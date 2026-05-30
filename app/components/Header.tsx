@@ -10,7 +10,7 @@ export default function Header() {
     <header className="flex items-start justify-between">
       <Link href="/">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/assets/doug-lima-lettering.svg" alt="doug_lima." />
+        <img src="/assets/home/doug-lima-lettering.svg" alt="doug_lima." />
       </Link>
 
       <nav>

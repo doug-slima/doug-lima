@@ -4,6 +4,8 @@
   --color-bg-base: #F9F9F2;
   --color-text-default: #5F6A50;
   --color-text-active: #3B4028;
+  --color-surface-tag: #F0EEE5;
+  --color-text-muted: #A6AA97;
   --font-geist: var(--font-geist-var);
   --font-fenix: var(--font-fenix-var);
 }
