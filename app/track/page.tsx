@@ -155,7 +155,7 @@ export default function Track() {
         </div>
 
         {/* "a few steps:" — pixel-perfect at 50vh, aligned with first and last timeline blocks */}
-        <p className="absolute left-[10.5rem] top-1/2 -translate-y-1/2 font-fenix text-[20px] text-text-default">
+        <p className="absolute left-[10.5rem] top-1/2 -translate-y-1/2 font-fenix text-[24px] text-text-default">
           a few steps:
         </p>
 
