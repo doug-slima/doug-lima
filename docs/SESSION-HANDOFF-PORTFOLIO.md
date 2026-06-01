@@ -1,7 +1,7 @@
 # SESSION HANDOFF — douglima.work Portfolio
 
 > Documento de contexto para continuidade entre sessões.
-> Última atualização: 01 jun 2026 — Sessão 6 (ajustes de componentes: tags, seletores, avatar, NavSelector ✅)
+> Última atualização: 01 jun 2026 — Sessão 7 (correções pré-mobile: ordem da timeline, tamanho de font ✅)
 
 ---
 
@@ -295,7 +295,9 @@ O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé
 
 ## 10. Página: Track (`/track`) ✅ COMPLETA
 
-*(estrutura inalterada — tag swipe/back reposicionada, ver seção 8)*
+- **Ordem da timeline:** reversa — mais recente primeiro (2026 → 2011). Array em `page.tsx` declarado nessa ordem.
+- **"a few steps:":** `font-fenix text-[24px]` — mesmo tamanho dos seletores verticais da /craft.
+- *(tag swipe/back reposicionada — ver seção 8)*
 
 ---
 
@@ -309,11 +311,11 @@ O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé
 
 ---
 
-## 12. Pendências finais (Sessão 7 — próxima)
+## 12. Pendências finais (Sessão 8 — próxima)
 
+- [ ] **Responsivo (mobile/tablet)** ← próxima sessão, abrir branch `feat/mobile`
 - [ ] **Selected Works — dados reais** — Doug exporta assets, Claude Code popula `data.ts`
 - [ ] **Variável `NDA_PASSWORD` na Vercel** — adicionar no painel antes do deploy (`dvault`)
-- [ ] **Responsivo (mobile/tablet)** ← próxima sessão, abrir branch `feat/mobile`
 - [ ] Meta tags (og:image, description, favicon)
 - [ ] Transições entre páginas
 - [ ] Cloudflare Email Routing (`hello@douglima.work` → Gmail)
@@ -407,3 +409,7 @@ doug-lima/
 - **Componente com variantes (`variant` prop):** padrão para estender um componente sem duplicar código. `NavSelector` suporta `"pill"` e `"underline"` via prop, mantendo a mesma API base.
 - **`mix-blend-mode: multiply`** no background da tag não funcionou bem para este caso — a superfície com opacidade (`bg-[#A6AA74]/20`) foi a solução correta e mais simples.
 - **Hot reload + `useEffect` deps:** trocar `[]` por `resetDeps` em um effect existente causa erro de tamanho de array no hot reload. Solução: fundir o effect problemático com outro que já usa `resetDeps`.
+
+### Sessão 7
+- **Ordem de dados em arrays:** a ordem de exibição do carrossel segue exatamente a ordem de declaração do array em `page.tsx`. Para inverter a timeline, basta reordenar o array — não há lógica de sort automático.
+- **Consistência de font sizes:** elementos visuais análogos em páginas diferentes (label lateral da /track e seletores verticais da /craft) devem usar o mesmo tamanho de fonte. Ambos em `font-fenix text-[24px]`.
