@@ -8,55 +8,28 @@ import { useSplitLayout } from "../hooks/useSplitLayout";
 
 const timeline: TimelineEntry[] = [
   {
-    year: "2011",
-    lines: [{ text: "Service Designer", style: "light" }],
-    logo: { src: "/assets/companies-page-track/livework-logo.png", alt: "Livework" },
-  },
-  {
-    year: "2012",
-    lines: [{ text: "Service Designer", style: "light" }],
-    logo: { src: "/assets/companies-page-track/itau-logo.png", alt: "Itaú" },
-  },
-  {
-    year: "2014",
-    lines: [
-      { text: "Master's Degree in", style: "light" },
-      { text: "Technology & Society", style: "bold" },
-      { text: "Unifei/MG", style: "serif" },
-    ],
-    logo: { src: "/assets/companies-page-track/unifei-logo.png", alt: "Unifei" },
-  },
-  {
-    year: "2017",
-    lines: [
-      { text: "Service Designer", style: "light" },
-      { text: "& Researcher", style: "light" },
-    ],
-    logo: { src: "/assets/companies-page-track/livework-logo.png", alt: "Livework" },
-  },
-  {
-    year: "2018",
-    lines: [{ text: "UX Researcher", style: "light" }],
-    logo: { src: "/assets/companies-page-track/ifood-logo.png", alt: "iFood" },
-  },
-  {
-    year: "2018",
-    lines: [{ text: "Design Lead", style: "light" }],
-    logo: { src: "/assets/companies-page-track/kyvo-logo.png", alt: "Kyvo" },
-  },
-  {
-    year: "2019",
+    year: "2026",
     lines: [
       { text: "Teacher", style: "light" },
-      { text: "Future Studies", style: "bold" },
-      { text: "IED/SP", style: "serif" },
+      { text: "AI Augmented Design", style: "bold" },
+      { text: "ESPM/SP", style: "serif" },
     ],
-    logo: { src: "/assets/companies-page-track/ied-logo.png", alt: "IED São Paulo" },
+    logo: { src: "/assets/companies-page-track/espm-logo.png", alt: "ESPM São Paulo" },
   },
   {
-    year: "2019",
-    lines: [{ text: "Design Lead", style: "light" }],
-    logo: { src: "/assets/companies-page-track/hash-logo.png", alt: "Hash" },
+    year: "2024",
+    lines: [{ text: "Founding Designer", style: "light" }],
+    logo: { src: "/assets/companies-page-track/klauvi-logo.png", alt: "Klauvi" },
+  },
+  {
+    year: "2022",
+    lines: [{ text: "Design Expert", style: "light" }],
+    logo: { src: "/assets/companies-page-track/mercado-livre-logo.png", alt: "Mercado Livre" },
+  },
+  {
+    year: "2021",
+    lines: [{ text: "Design Manager", style: "light" }],
+    logo: { src: "/assets/companies-page-track/olist-logo.png", alt: "Olist" },
   },
   {
     year: "2020",
@@ -68,28 +41,55 @@ const timeline: TimelineEntry[] = [
     logo: { src: "/assets/companies-page-track/aprender-design-logo.png", alt: "Aprender Design" },
   },
   {
-    year: "2021",
-    lines: [{ text: "Design Manager", style: "light" }],
-    logo: { src: "/assets/companies-page-track/olist-logo.png", alt: "Olist" },
+    year: "2019",
+    lines: [{ text: "Design Lead", style: "light" }],
+    logo: { src: "/assets/companies-page-track/hash-logo.png", alt: "Hash" },
   },
   {
-    year: "2022",
-    lines: [{ text: "Design Expert", style: "light" }],
-    logo: { src: "/assets/companies-page-track/mercado-livre-logo.png", alt: "Mercado Livre" },
-  },
-  {
-    year: "2024",
-    lines: [{ text: "Founding Designer", style: "light" }],
-    logo: { src: "/assets/companies-page-track/klauvi-logo.png", alt: "Klauvi" },
-  },
-  {
-    year: "2026",
+    year: "2019",
     lines: [
       { text: "Teacher", style: "light" },
-      { text: "AI Augmented Design", style: "bold" },
-      { text: "ESPM/SP", style: "serif" },
+      { text: "Future Studies", style: "bold" },
+      { text: "IED/SP", style: "serif" },
     ],
-    logo: { src: "/assets/companies-page-track/espm-logo.png", alt: "ESPM São Paulo" },
+    logo: { src: "/assets/companies-page-track/ied-logo.png", alt: "IED São Paulo" },
+  },
+  {
+    year: "2018",
+    lines: [{ text: "Design Lead", style: "light" }],
+    logo: { src: "/assets/companies-page-track/kyvo-logo.png", alt: "Kyvo" },
+  },
+  {
+    year: "2018",
+    lines: [{ text: "UX Researcher", style: "light" }],
+    logo: { src: "/assets/companies-page-track/ifood-logo.png", alt: "iFood" },
+  },
+  {
+    year: "2017",
+    lines: [
+      { text: "Service Designer", style: "light" },
+      { text: "& Researcher", style: "light" },
+    ],
+    logo: { src: "/assets/companies-page-track/livework-logo.png", alt: "Livework" },
+  },
+  {
+    year: "2014",
+    lines: [
+      { text: "Master's Degree in", style: "light" },
+      { text: "Technology & Society", style: "bold" },
+      { text: "Unifei/MG", style: "serif" },
+    ],
+    logo: { src: "/assets/companies-page-track/unifei-logo.png", alt: "Unifei" },
+  },
+  {
+    year: "2012",
+    lines: [{ text: "Service Designer", style: "light" }],
+    logo: { src: "/assets/companies-page-track/itau-logo.png", alt: "Itaú" },
+  },
+  {
+    year: "2011",
+    lines: [{ text: "Service Designer", style: "light" }],
+    logo: { src: "/assets/companies-page-track/livework-logo.png", alt: "Livework" },
   },
 ];
 
