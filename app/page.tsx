@@ -44,11 +44,10 @@ export default function Home() {
         </>
       }
       footerContent={
-        <div className="flex items-end gap-6 font-fenix text-[18px]">
+        <div className="flex items-center gap-4 pl-6 pr-5 h-[56px] rounded-full bg-[#F3F2E6] hover:bg-[#F6F3E6] hover:ring-1 hover:ring-[#DEDDCE] transition-colors">
           <button
             onClick={copyEmail}
-            className="p-0 leading-none bg-transparent border-0 text-text-default hover:text-text-active transition-colors cursor-pointer"
-            style={{ fontSize: "20px" }}
+            className="p-0 leading-none bg-transparent border-0 font-fenix text-[20px] text-text-default hover:text-text-active transition-colors cursor-pointer"
           >
             {copied ? "copied!" : "hello@douglima.work"}
           </button>
@@ -57,7 +56,7 @@ export default function Home() {
             href="https://substack.com/@douglima"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-end"
+            className="inline-flex items-center"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -71,7 +70,7 @@ export default function Home() {
             href="https://www.linkedin.com/in/dougslima/?locale=en"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-end"
+            className="inline-flex items-center"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -81,13 +80,22 @@ export default function Home() {
             />
           </a>
 
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/assets/home/doug-pixelart.png"
-            alt=""
-            aria-hidden="true"
-            className="h-10 block"
-          />
+          <div className="group/avatar relative inline-flex items-center h-8 cursor-pointer">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/home/avatar-doug.png"
+              alt=""
+              aria-hidden="true"
+              className="h-full block group-hover/avatar:hidden"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/home/avatar-doug-hi.png"
+              alt=""
+              aria-hidden="true"
+              className="h-full hidden group-hover/avatar:block"
+            />
+          </div>
         </div>
       }
     >

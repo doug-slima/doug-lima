@@ -41,7 +41,7 @@ export default function PageLayout({
         <Header />
         {children}
         {footerContent !== undefined && (
-          <footer className="mt-auto flex items-end justify-between">
+          <footer className="mt-auto flex items-center justify-between">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/home/dl-monogram.svg"

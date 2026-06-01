@@ -38,22 +38,21 @@ export function useSplitLayout(resetDeps: unknown[] = []) {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    rightColRef.current?.scrollTo({ top: 0, behavior: "instant" });
-    setAtEnd(false);
-  }, resetDeps);
-
-  useEffect(() => {
     const container = rightColRef.current;
-    if (!container) return;
+    container?.scrollTo({ top: 0, behavior: "instant" });
+    setAtEnd(false);
 
-    const onScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      setAtEnd(Math.round(scrollTop + clientHeight) >= scrollHeight);
-    };
+    const lastEl = lastItemRef.current;
+    if (!container || !lastEl) return;
 
-    container.addEventListener("scroll", onScroll, { passive: true });
-    return () => container.removeEventListener("scroll", onScroll);
-  }, []);
+    const observer = new IntersectionObserver(
+      ([entry]) => setAtEnd(entry.isIntersecting),
+      { root: container, threshold: 0 }
+    );
+
+    observer.observe(lastEl);
+    return () => observer.disconnect();
+  }, resetDeps);
 
   const scrollToTop = () => {
     rightColRef.current?.scrollTo({ top: 0, behavior: "smooth" });

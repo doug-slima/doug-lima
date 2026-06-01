@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowRight } from "@phosphor-icons/react";
+import { ArrowRight, ArrowUp } from "@phosphor-icons/react";
 import Header from "../components/Header";
 import { useSplitLayout } from "../hooks/useSplitLayout";
 import { craftProjects, type Section } from "./data";
@@ -102,29 +102,10 @@ export default function Craft() {
             </button>
           </div>
 
-          {/* Bottom — tag + monogram */}
-          <div className="flex flex-col gap-[40px]">
-            {atEnd ? (
-              <button
-                onClick={scrollToTop}
-                className="w-fit h-[40px] px-[18px] py-0 bg-surface-tag rounded-full font-geist text-[14px] text-text-default cursor-pointer flex items-center gap-[6px] border-0"
-              >
-                <span className="font-semibold">back</span>
-                <span className="font-light">to top</span>
-                <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
-                  <path d="M8 13V1M4 5L8 1L12 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            ) : (
-              <div className="w-fit h-[40px] px-[18px] bg-surface-tag rounded-full font-geist text-[14px] text-text-default cursor-default flex items-center">
-                <span className="font-semibold">swipe-up</span>
-                <span className="font-light">&nbsp;to see more</span>
-              </div>
-            )}
+          {/* Bottom — monogram */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/home/dl-monogram.svg" alt="" aria-hidden="true" className="w-[88px]" />
 
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/home/dl-monogram.svg" alt="" aria-hidden="true" className="w-[88px]" />
-          </div>
         </div>
 
         <ProjectSelector
@@ -133,6 +114,22 @@ export default function Craft() {
           onSelect={setActiveProject}
         />
 
+      </div>
+
+      {/* Swipe / Back-to-top — bottom right, centro alinhado com centro do monograma */}
+      <div className="absolute bottom-[104px] right-[88px] z-20 pointer-events-auto">
+        {atEnd ? (
+          <button
+            onClick={scrollToTop}
+            className="h-[56px] pl-6 pr-5 gap-2 rounded-full bg-[#A6AA74]/20 hover:bg-[#F6F3E6] hover:ring-1 hover:ring-[#DEDDCE] font-fenix text-[20px] text-[#3B4028] cursor-pointer flex items-center border-0 transition-all"
+          >
+            back to top <ArrowUp size={20} />
+          </button>
+        ) : (
+          <div className="h-[56px] px-6 rounded-full bg-[#A6AA74]/20 font-fenix text-[20px] text-[#3B4028] cursor-default flex items-center">
+            swipe-up to see more
+          </div>
+        )}
       </div>
 
       {showPasswordGate && (
