@@ -103,7 +103,7 @@ export default function Track() {
 
       {/* ── Mobile layout ───────────────────────────────────────────── */}
       <div className="block md:hidden bg-bg-base min-h-screen">
-        <div className="px-6 pt-10 pb-20 flex flex-col">
+        <div className="px-10 pt-10 pb-10 flex flex-col">
 
           <Header />
 
@@ -143,7 +143,7 @@ export default function Track() {
           </div>
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/home/dl-monogram.svg" alt="" aria-hidden="true" className="w-[64px] mt-12" />
+          <img src="/assets/home/dl-monogram.svg" alt="" aria-hidden="true" className="w-[104px] mt-12" />
 
         </div>
       </div>

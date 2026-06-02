@@ -47,10 +47,10 @@ export default function Home() {
             {/* Mobile: avatar toggle */}
             <button
               onClick={() => setContactOpen(true)}
-              className="block md:hidden p-0 border-0 bg-transparent cursor-pointer"
+              className="block md:hidden w-[104px] h-[104px] p-0 border-0 bg-transparent cursor-pointer flex items-center justify-center"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/home/avatar-doug.png" alt="Contact" className="h-[40px]" />
+              <img src="/assets/home/avatar-doug.png" alt="Contact" className="w-[104px] h-[104px] object-contain" />
             </button>
 
             {/* Desktop: full contact tag */}
@@ -100,7 +100,7 @@ export default function Home() {
           onClick={() => setContactOpen(false)}
         >
           <div
-            className="absolute bottom-10 right-5 flex flex-col items-end gap-3"
+            className="absolute bottom-10 right-10 flex flex-col items-end gap-3"
             onClick={(e) => e.stopPropagation()}
           >
             {/* LinkedIn */}
@@ -142,11 +142,11 @@ export default function Home() {
             {/* Avatar — close button */}
             <button
               onClick={() => setContactOpen(false)}
-              className="w-[56px] h-[56px] rounded-full flex items-center justify-center border-0 cursor-pointer"
+              className="w-[104px] h-[104px] rounded-full flex items-center justify-center border-0 cursor-pointer"
               style={{ backgroundColor: "#C7FF04" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/home/avatar-doug-hi.png" alt="" aria-hidden="true" className="h-[36px]" />
+              <img src="/assets/home/avatar-doug-hi.png" alt="" aria-hidden="true" className="w-[104px] h-[104px] object-contain" />
             </button>
           </div>
         </div>
