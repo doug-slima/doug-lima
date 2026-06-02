@@ -126,7 +126,7 @@ export default function Craft() {
           {!showPasswordGate && (
             <>
               {/* Project selector — horizontal scroll */}
-              <div className="mt-6 overflow-x-auto pb-2">
+              <div className="mt-6 -mx-10 px-10 overflow-x-auto pb-2">
                 <NavSelector
                   items={currentProjects.map((p) => ({
                     label: p.name,
