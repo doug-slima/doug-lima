@@ -4,7 +4,7 @@ export default function StickyHeader() {
   return (
     <div className="fixed top-0 left-0 right-0 z-40 pointer-events-none">
       {/* Solid header bar */}
-      <div className="pointer-events-auto bg-bg-base px-10 pb-2">
+      <div className="pointer-events-auto bg-bg-base px-10">
         <Header />
       </div>
       {/* Gradient fade — matches BlurOverlay */}

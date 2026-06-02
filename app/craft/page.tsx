@@ -78,7 +78,7 @@ export default function Craft() {
 
         <StickyHeader />
 
-        <div className="px-10 pt-[88px] pb-10 flex flex-col">
+        <div className="px-10 pt-[80px] pb-10 flex flex-col">
 
           {/* Section dropdown */}
           <div ref={sectionDropdownRef} className="mt-0 relative z-20">
