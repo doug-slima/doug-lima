@@ -18,3 +18,15 @@
   from { transform: translateY(0); }
   to { transform: translateY(-50%); }
 }
+
+/* MosaicBackground positioning — mobile: left-anchored, desktop: right-anchored */
+.mosaic-container {
+  right: auto;
+  left: 0;
+}
+@media (min-width: 768px) {
+  .mosaic-container {
+    left: auto;
+    right: 0;
+  }
+}
