@@ -44,13 +44,13 @@ export default function Home() {
         }
         footerContent={
           <>
-            {/* Mobile: avatar toggle */}
+            {/* Mobile: avatar toggle — 104px circle, no surface, avatar centered */}
             <button
               onClick={() => setContactOpen(true)}
-              className="block md:hidden w-[104px] h-[104px] p-0 border-0 bg-transparent cursor-pointer flex items-center justify-center"
+              className="block md:hidden w-[104px] h-[104px] rounded-full p-0 border-0 bg-transparent cursor-pointer flex items-center justify-center"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/home/avatar-doug.png" alt="Contact" className="w-[104px] h-[104px] object-contain" />
+              <img src="/assets/home/avatar-doug.png" alt="Contact" className="h-[56px] w-[56px] object-contain" />
             </button>
 
             {/* Desktop: full contact tag */}
@@ -139,14 +139,14 @@ export default function Home() {
               <EnvelopeSimple size={22} />
             </button>
 
-            {/* Avatar — close button */}
+            {/* Avatar — close button, 104px circle #C7FF04, avatar-hi centered */}
             <button
               onClick={() => setContactOpen(false)}
               className="w-[104px] h-[104px] rounded-full flex items-center justify-center border-0 cursor-pointer"
               style={{ backgroundColor: "#C7FF04" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/home/avatar-doug-hi.png" alt="" aria-hidden="true" className="w-[104px] h-[104px] object-contain" />
+              <img src="/assets/home/avatar-doug-hi.png" alt="" aria-hidden="true" className="h-[56px] w-[56px] object-contain" />
             </button>
           </div>
         </div>
