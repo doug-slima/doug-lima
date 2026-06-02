@@ -7,8 +7,7 @@ export default function StickyHeader() {
         <Header />
       </div>
       <div
-        className="h-16"
-        style={{ background: "linear-gradient(to bottom, #F9F9F2 0%, rgba(249,249,242,0) 100%)" }}
+        style={{ height: "80px", background: "linear-gradient(to bottom, #F9F9F2 0%, rgba(249,249,242,0) 100%)" }}
       />
     </div>
   );
