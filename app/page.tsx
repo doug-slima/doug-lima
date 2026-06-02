@@ -43,7 +43,7 @@ export default function Home() {
             {/* Mobile: lighter overlay — lets more mosaic show through */}
             <div
               className="block md:hidden absolute top-0 left-0 right-0 h-[185px] z-10 pointer-events-none"
-              style={{ background: "linear-gradient(to bottom, rgba(249,249,242,0.65) 0%, rgba(249,249,242,0.4) 50%, rgba(249,249,242,0) 100%)" }}
+              style={{ background: "linear-gradient(to bottom, rgba(249,249,242,0.35) 0%, rgba(249,249,242,0.15) 50%, rgba(249,249,242,0) 100%)" }}
             />
           </>
         }
