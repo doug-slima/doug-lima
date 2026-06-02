@@ -107,7 +107,7 @@ export default function Track() {
 
         <StickyHeader />
 
-        <div className="px-10 pt-[120px] pb-10 flex flex-col">
+        <div className="px-10 pt-[200px] pb-10 flex flex-col">
 
           <div className="mt-0">
             <p className="font-geist font-light text-[28px] leading-tight text-text-default">
