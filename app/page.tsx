@@ -29,7 +29,7 @@ export default function Home() {
         backgroundLayers={
           <>
             {/* Mosaic background — z-0 */}
-            <div className="absolute right-0 top-0 h-full w-full md:w-[1272px] overflow-hidden z-0">
+            <div className="absolute left-0 md:left-auto md:right-0 top-0 h-full w-[1272px] overflow-hidden z-0">
               <div className="flex flex-col animate-mosaic-scroll">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/assets/home/mosaic-home-bg.png" alt="" aria-hidden="true" className="w-full block" />
