@@ -74,9 +74,13 @@ export default function Craft() {
 
       {/* ── Mobile layout ───────────────────────────────────────────── */}
       <div className="block md:hidden bg-bg-base min-h-screen">
-        <div className="px-10 pt-10 pb-10 flex flex-col">
 
+        {/* Fixed header */}
+        <div className="fixed top-0 left-0 right-0 z-40 bg-bg-base px-10">
           <Header />
+        </div>
+
+        <div className="px-10 pt-[80px] pb-10 flex flex-col">
 
           {/* Section dropdown */}
           <div ref={sectionDropdownRef} className="mt-0 relative z-20">
