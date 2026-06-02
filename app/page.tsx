@@ -83,7 +83,7 @@ export default function Home() {
         }
       >
         {/* Tagline */}
-        <div className="mt-8">
+        <div className="mt-0 md:mt-8">
           <p className="font-geist font-light text-[40px] leading-tight text-text-default">
             Curious
             <br />

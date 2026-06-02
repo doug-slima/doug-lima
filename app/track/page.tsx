@@ -107,7 +107,7 @@ export default function Track() {
 
           <Header />
 
-          <div className="mt-8">
+          <div className="mt-0">
             <p className="font-geist font-light text-[28px] leading-tight text-text-default">
               20 years across<br />
               Design, Experiences<br />

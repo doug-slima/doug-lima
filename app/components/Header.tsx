@@ -8,7 +8,7 @@ export default function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="flex items-start justify-between">
+    <header className="flex items-start justify-between py-6 md:py-0">
       <Link href="/" className="group">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/assets/home/doug-lima-lettering.svg" alt="doug_lima." className="h-[32px] w-auto block group-hover:hidden" />

@@ -65,7 +65,7 @@ export default function Craft() {
           <Header />
 
           {/* Section switcher */}
-          <div className="mt-8 flex flex-col gap-4">
+          <div className="mt-0 flex flex-col gap-4">
             <button
               onClick={() => handleSectionChange("playground")}
               className={`w-fit font-geist font-light text-[32px] leading-tight cursor-pointer border-0 bg-transparent p-0 flex items-center gap-2 ${
