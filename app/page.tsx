@@ -38,18 +38,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Desktop: full opacity overlay */}
-            <BlurOverlay className="hidden md:block absolute top-0 left-0 right-0" />
-            {/* Mobile: blur(16) overlay — fades out toward bottom */}
-            <div
-              className="block md:hidden absolute top-0 left-0 right-0 h-[185px] z-10 pointer-events-none"
-              style={{
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
-                maskImage: "linear-gradient(to bottom, black 0%, black 50%, transparent 100%)",
-                WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 50%, transparent 100%)",
-              }}
-            />
+            {/* Header blur overlay — z-10 */}
+            <BlurOverlay />
           </>
         }
         footerContent={
