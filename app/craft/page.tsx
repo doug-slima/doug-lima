@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ArrowRight, ArrowUp } from "@phosphor-icons/react";
+import { useState, useEffect, useRef } from "react";
+import { ArrowRight, ArrowUp, CaretRight, CaretDown } from "@phosphor-icons/react";
 import Header from "../components/Header";
 import { useSplitLayout } from "../hooks/useSplitLayout";
 import { craftProjects, type Section } from "./data";
@@ -16,6 +16,8 @@ export default function Craft() {
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sectionDropdownOpen, setSectionDropdownOpen] = useState(false);
+  const sectionDropdownRef = useRef<HTMLDivElement>(null);
 
   const { refs, state, scrollToTop } = useSplitLayout([activeProject]);
   const { rightColRef, leftContentRef, firstItemRef, lastItemRef } = refs;
@@ -55,6 +57,17 @@ export default function Craft() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showPasswordGate]);
 
+  useEffect(() => {
+    if (!sectionDropdownOpen) return;
+    function handleOutsideClick(e: MouseEvent) {
+      if (sectionDropdownRef.current && !sectionDropdownRef.current.contains(e.target as Node)) {
+        setSectionDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [sectionDropdownOpen]);
+
   return (
     <>
 
@@ -64,26 +77,45 @@ export default function Craft() {
 
           <Header />
 
-          {/* Section switcher */}
-          <div className="mt-0 flex flex-col gap-4">
+          {/* Section dropdown */}
+          <div ref={sectionDropdownRef} className="mt-0 relative">
             <button
-              onClick={() => handleSectionChange("playground")}
-              className={`w-fit font-geist font-light text-[32px] leading-tight cursor-pointer border-0 bg-transparent p-0 flex items-center gap-2 ${
-                activeSection === "playground" ? "text-text-active" : "text-text-muted"
-              }`}
+              onClick={() => setSectionDropdownOpen(!sectionDropdownOpen)}
+              className="flex items-center gap-2 font-geist font-light text-[24px] leading-tight text-text-active bg-transparent border-0 p-0 cursor-pointer"
             >
-              {activeSection === "playground" && <ArrowRight size={32} color="#3B4028" />}
-              Playground
+              {activeSection === "playground" ? "Playground" : "Selected Works"}
+              {sectionDropdownOpen
+                ? <CaretDown size={20} color="#3B4028" />
+                : <CaretRight size={20} color="#3B4028" />}
             </button>
-            <button
-              onClick={() => handleSectionChange("selected-works")}
-              className={`w-fit font-geist font-light text-[32px] leading-tight cursor-pointer border-0 bg-transparent p-0 flex items-center gap-2 ${
-                activeSection === "selected-works" ? "text-text-active" : "text-text-muted"
-              }`}
-            >
-              {activeSection === "selected-works" && <ArrowRight size={32} color="#3B4028" />}
-              Selected Works
-            </button>
+
+            {sectionDropdownOpen && (
+              <div
+                className="absolute top-full left-0 z-30 mt-2 w-full rounded-xl flex flex-col"
+                style={{ backgroundColor: "#F6F3E6", border: "1px solid #AFB4A7" }}
+              >
+                {/* Active section — closes dropdown */}
+                <button
+                  onClick={() => setSectionDropdownOpen(false)}
+                  className="flex items-center gap-2 font-geist font-light text-[24px] leading-tight text-text-active bg-transparent border-0 cursor-pointer text-left"
+                  style={{ padding: "20px 20px 8px 20px" }}
+                >
+                  {activeSection === "playground" ? "Playground" : "Selected Works"}
+                  <CaretDown size={20} color="#3B4028" />
+                </button>
+                {/* Inactive section — switches and closes */}
+                <button
+                  onClick={() => {
+                    handleSectionChange(activeSection === "playground" ? "selected-works" : "playground");
+                    setSectionDropdownOpen(false);
+                  }}
+                  className="font-geist font-light text-[24px] leading-tight bg-transparent border-0 cursor-pointer text-left"
+                  style={{ padding: "4px 20px 20px 20px", color: "#AFB4A7" }}
+                >
+                  {activeSection === "playground" ? "Selected Works" : "Playground"}
+                </button>
+              </div>
+            )}
           </div>
 
           {!showPasswordGate && (
