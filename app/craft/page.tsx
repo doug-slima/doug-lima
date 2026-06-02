@@ -56,7 +56,142 @@ export default function Craft() {
   }, [showPasswordGate]);
 
   return (
-    <div className="bg-bg-base h-screen overflow-hidden relative">
+    <>
+
+      {/* ── Mobile layout ───────────────────────────────────────────── */}
+      <div className="block md:hidden bg-bg-base min-h-screen">
+        <div className="px-10 pt-10 pb-10 flex flex-col">
+
+          <Header />
+
+          {/* Section switcher */}
+          <div className="mt-0 flex flex-col gap-4">
+            <button
+              onClick={() => handleSectionChange("playground")}
+              className={`w-fit font-geist font-light text-[32px] leading-tight cursor-pointer border-0 bg-transparent p-0 flex items-center gap-2 ${
+                activeSection === "playground" ? "text-text-active" : "text-text-muted"
+              }`}
+            >
+              {activeSection === "playground" && <ArrowRight size={32} color="#3B4028" />}
+              Playground
+            </button>
+            <button
+              onClick={() => handleSectionChange("selected-works")}
+              className={`w-fit font-geist font-light text-[32px] leading-tight cursor-pointer border-0 bg-transparent p-0 flex items-center gap-2 ${
+                activeSection === "selected-works" ? "text-text-active" : "text-text-muted"
+              }`}
+            >
+              {activeSection === "selected-works" && <ArrowRight size={32} color="#3B4028" />}
+              Selected Works
+            </button>
+          </div>
+
+          {!showPasswordGate && (
+            <>
+              {/* Project selector — horizontal scroll */}
+              <div className="flex flex-row gap-3 overflow-x-auto pb-2 mt-6 -mx-6 px-6">
+                {currentProjects.map((p) => (
+                  <button
+                    key={p.name}
+                    onClick={() => setActiveProject(p.name)}
+                    className={`flex-shrink-0 h-[36px] px-4 rounded-full font-fenix text-[16px] border-0 cursor-pointer transition-all ${
+                      p.name === activeProject
+                        ? "ring-1 ring-[#3B4028] text-text-active bg-transparent"
+                        : "bg-[#A6AA74]/20 text-[#3B4028]"
+                    }`}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Info block */}
+              <div className="mt-6 flex items-center justify-between">
+                <div className="flex flex-col">
+                  <p className="font-geist font-semibold text-[20px] leading-tight text-text-default">{currentProject.label}</p>
+                  <p className="font-geist font-light text-[20px] leading-tight text-text-default">{currentProject.name}</p>
+                </div>
+                <div className="w-[120px] h-[56px] flex items-center justify-end">
+                  {currentProject.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={currentProject.logo} alt={currentProject.name} className="max-h-full max-w-full object-contain" />
+                  ) : (
+                    <div className="w-full h-full bg-surface-tag rounded-lg" />
+                  )}
+                </div>
+              </div>
+
+              {/* Images stacked */}
+              <div className="mt-6 flex flex-col gap-4">
+                {currentProject.images.map((src, i) => {
+                  const isLast = i === currentProject.images.length - 1;
+                  const hug = isLast && currentProject.hugLast;
+                  return (
+                    <div
+                      key={i}
+                      className={`w-full rounded-lg overflow-hidden bg-surface-tag flex items-center justify-center ${
+                        hug ? "h-auto" : "h-[220px]"
+                      }`}
+                    >
+                      {src ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={src} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="font-geist font-light text-[18px] text-text-muted opacity-40">
+                          {currentProject.name}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/home/dl-monogram.svg" alt="" aria-hidden="true" className="w-[104px] mt-12" />
+
+        </div>
+
+        {/* Password gate — mobile */}
+        {showPasswordGate && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center px-6"
+            style={{ backgroundColor: "rgba(243, 242, 230, 0.25)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
+          >
+            <div className="flex flex-col items-center w-full">
+              <h2 className="text-center" style={{ fontFamily: "var(--font-fenix-var)", fontSize: "24px", color: "#5F6A50" }}>
+                This section is protected by NDA
+              </h2>
+              <p className="text-center mt-2" style={{ fontFamily: "var(--font-fenix-var)", fontSize: "20px", color: "#5F6A50" }}>
+                please enter the password below:
+              </p>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                className="mt-4 w-full text-center rounded-lg border px-4 py-3 focus:ring-0 focus:outline-none"
+                style={{ backgroundColor: "#F0EEE5", borderColor: "#A6AA74", color: "#5F6A50", outline: "none", maxWidth: "280px" }}
+                autoFocus
+              />
+              {authError && (
+                <p className="mt-2 font-geist font-light text-[14px] text-text-muted">wrong password</p>
+              )}
+              <button
+                onClick={() => handleSectionChange("playground")}
+                className="mt-4 underline"
+                style={{ fontFamily: "var(--font-fenix-var)", fontSize: "20px", color: "#5F6A50" }}
+              >
+                cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Desktop layout ──────────────────────────────────────────── */}
+    <div className="hidden md:block bg-bg-base h-screen overflow-hidden relative">
 
       <ProjectCarousel
         project={currentProject}
@@ -170,5 +305,7 @@ export default function Craft() {
       )}
 
     </div>
+
+    </>
   );
 }
