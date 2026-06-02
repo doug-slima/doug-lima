@@ -21,7 +21,7 @@ function itemClass(active: boolean, variant: "pill" | "underline") {
   if (variant === "pill") {
     return active
       ? "flex items-center px-3 md:px-4 h-[28px] md:h-[32px] rounded-full font-fenix text-[20px] md:text-[24px] text-text-active bg-[#C7FF04]"
-      : "flex items-center px-3 md:px-4 h-[28px] md:h-[32px] rounded-full font-fenix text-[20px] md:text-[24px] text-text-default hover:text-text-active hover:ring-1 hover:ring-[#AFB4A7] transition-all";
+      : "flex items-center px-3 md:px-4 h-[28px] md:h-[32px] rounded-full font-fenix text-[20px] md:text-[24px] text-text-default ring-1 ring-[#AFB4A7] hover:text-text-active hover:bg-[#E8E9D9] hover:ring-0 transition-all";
   }
   return active
     ? "w-fit font-fenix text-[24px] text-text-active underline decoration-text-active underline-offset-[3px]"
