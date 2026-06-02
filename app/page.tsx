@@ -4,6 +4,7 @@ import { useState } from "react";
 import { EnvelopeSimple } from "@phosphor-icons/react";
 import PageLayout from "./components/PageLayout";
 import BlurOverlay from "./components/BlurOverlay";
+import MosaicBackground from "./components/MosaicBackground";
 
 const pillStyle: React.CSSProperties = {
   backgroundColor: "#F6F3E6",
@@ -28,17 +29,7 @@ export default function Home() {
         contentClassName="relative z-20 h-full"
         backgroundLayers={
           <>
-            {/* Mosaic background — z-0 */}
-            <div className="absolute right-0 top-0 h-full w-[1272px] overflow-hidden z-0">
-              <div className="flex flex-col animate-mosaic-scroll">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/assets/home/mosaic-home-bg.png" alt="" aria-hidden="true" className="w-full block" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/assets/home/mosaic-home-bg.png" alt="" aria-hidden="true" className="w-full block" />
-              </div>
-            </div>
-
-            {/* Header blur overlay — z-10 */}
+            <MosaicBackground />
             <BlurOverlay />
           </>
         }
