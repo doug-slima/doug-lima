@@ -114,7 +114,7 @@ export default function Craft() {
                     setSectionDropdownOpen(false);
                   }}
                   className="font-geist font-light text-[24px] leading-tight bg-transparent border-0 cursor-pointer text-left"
-                  style={{ padding: "4px 20px 20px 20px", color: "#AFB4A7" }}
+                  style={{ padding: "4px 20px 20px 20px", color: "#A6AA74" }}
                 >
                   {activeSection === "playground" ? "Selected Works" : "Playground"}
                 </button>
