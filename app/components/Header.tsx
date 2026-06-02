@@ -22,6 +22,7 @@ export default function Header() {
             { label: "craft", href: "/craft", active: pathname === "/craft" },
             { label: "track", href: "/track", active: pathname === "/track" },
           ]}
+          gap={24}
         />
       </nav>
     </header>
