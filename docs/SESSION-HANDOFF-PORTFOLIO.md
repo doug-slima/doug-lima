@@ -1,7 +1,7 @@
 # SESSION HANDOFF — douglima.work Portfolio
 
 > Documento de contexto para continuidade entre sessões.
-> Última atualização: 02 jun 2026 — Sessão 8 (mobile: StickyHeader, pills, scroll full-bleed, dropdown) ✅
+> Última atualização: 02 jun 2026 — Sessão 9 (mobile polish: Header unificado, control bar craft, carousel, mosaic) ✅
 
 ---
 
@@ -200,30 +200,39 @@ Posição: `absolute left-[10.5rem] top-1/2 -translate-y-1/2`.
 
 *(inalterados — ver sessão 5)*
 
-### 7.11 `app/components/StickyHeader.tsx`
+### 7.11 `app/components/Header.tsx` — comportamento mobile (atualizado sessão 9)
 
-Header fixo para mobile nas páginas /craft e /track. **NÃO usar na home** — a home usa `PageLayout` com `h-dvh overflow-hidden` e não precisa de fixed header.
+O `Header` é **um componente único** para todas as páginas. Internamente renderiza dois elementos distintos por breakpoint:
 
 ```tsx
-// Estrutura:
-<div fixed top-0 left-0 right-0 z-40 pointer-events-none>
-  <div pointer-events-auto bg-bg-base px-10 pt-10>
-    <Header />  // py-6 md:py-0 → adiciona 24+24px mobile
+// Mobile: fixed no topo, com fundo sólido + gradiente
+<div className="md:hidden fixed top-0 left-0 right-0 z-40 pointer-events-none">
+  <div className="pointer-events-auto bg-bg-base px-10 pt-10">
+    <header className="flex items-start justify-between py-6">
+      <LogoAndNav />
+    </header>
   </div>
-  <div style={{ height: "80px", background: "linear-gradient(#F9F9F2 → transparent)" }} />
+  <div style={{ height: "24px", background: "linear-gradient(#F9F9F2 → transparent)" }} />
 </div>
+
+// Desktop: in-flow, posicionado pelo layout da página
+<header className="hidden md:flex items-start justify-between">
+  <LogoAndNav />
+</header>
 ```
 
-**Alturas:**
-- Wrapper `pt-10` = 40px
-- Header `py-6` top = 24px + img 32px + bottom 24px = 80px
+**Alturas mobile:**
+- `pt-10` = 40px
+- `py-6` top = 24px + img 32px + bottom 24px = 80px
 - **Total sólido = 120px**
-- Gradiente abaixo = 80px (pointer-events-none)
-- **Total visual = 200px**
+- Gradiente = 24px
+- **Total visual = 144px**
 
-**Conteúdo nas páginas:** usar `pt-[200px]` no content div para que o dropdown comece ABAIXO do gradiente. Ao scrollar, o conteúdo passa por trás do header com fade natural.
+**Conteúdo nas páginas mobile:** usar `pt-[144px]` no content div. Craft usa `pt-[156px]` (12px extra de respiro abaixo do header).
 
-**REGRA:** O `pt-10` no wrapper é obrigatório — sem ele o header fica visivelmente diferente da home (logo colado ao topo em vez de 40px de respiro).
+**`StickyHeader.tsx` foi deletado na sessão 9.** Não recriar — toda a lógica está dentro do `Header`.
+
+**REGRA:** Não adicionar wrappers nem lógica de header fora do próprio `Header.tsx`. O componente é auto-suficiente.
 
 ---
 
@@ -339,13 +348,15 @@ O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé
 ## 12. Pendências finais (Sessão 8 — próxima)
 
 - [x] **Responsivo mobile — Home, Track, Craft** ← feito na sessão 8
+- [x] **Mobile polish — Header unificado, control bar craft, carousel, mosaic** ← feito na sessão 9
+- [x] **Deploy publicado** ← sessão 9 — `douglima.work` no ar
 - [ ] **Selected Works — dados reais** — Doug exporta assets, Claude Code popula `data.ts`
 - [ ] **Variável `NDA_PASSWORD` na Vercel** — adicionar no painel antes do deploy (`dvault`)
 - [ ] Meta tags (og:image, description, favicon)
 - [ ] Transições entre páginas
 - [ ] Cloudflare Email Routing (`hello@douglima.work` → Gmail)
 - [ ] Deletar `app/craft/PasswordGate.tsx` (legado, não usado)
-- [ ] **git push + deploy final** ← etapa de fechamento
+- [ ] **Track mobile** — validar control bar (se necessário, replicar padrão da craft)
 
 ---
 
@@ -359,19 +370,19 @@ O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé
 
 ---
 
-## 14. Arquivos do projeto (atualizado — sessão 6)
+## 14. Arquivos do projeto (atualizado — sessão 9)
 
 ```
 doug-lima/
 ├── .env.local                        # NDA_PASSWORD=dvault (não commitado)
 ├── app/
 │   ├── components/
-│   │   ├── Header.tsx                # Logo (hover swap) + NavSelector pill row
+│   │   ├── Header.tsx                # Logo + nav — mobile: fixed+gradiente; desktop: in-flow
+│   │   ├── MosaicBackground.tsx      # Mosaico animado — inline styles críticos, .mosaic-container no CSS
 │   │   ├── NavSelector.tsx           # Seletor reutilizável: variant pill|underline, direction row|col
-│   │   ├── PageLayout.tsx            # Layout padrão: paddings + header + footer items-center
-│   │   ├── BlurOverlay.tsx           # Gradiente fade 185px
+│   │   ├── PageLayout.tsx            # Layout padrão: pt-[144px] mobile / pt-20 desktop
+│   │   ├── BlurOverlay.tsx           # Gradiente fade 185px (desktop scroll columns)
 │   │   ├── ScrollColumn.tsx          # overflow-y-auto + BlurOverlay embutido
-│   │   ├── StickyHeader.tsx          # Header fixo para mobile (craft + track)
 │   │   └── TimelineBlock.tsx         # Bloco da timeline (ano | texto | logo)
 │   ├── hooks/
 │   │   └── useSplitLayout.ts         # Hook split layout — IntersectionObserver p/ atEnd
@@ -476,3 +487,39 @@ doug-lima/
 6. **`pointer-events-none` no wrapper do gradiente sem restaurar no conteúdo.**
    - Erro: marcar o outer fixed div como `pointer-events-none` sem marcar o header interno como `pointer-events-auto` — resultado: header iclicável.
    - Correto: `pointer-events-none` no outer wrapper, `pointer-events-auto` no div do header sólido.
+
+### Sessão 9 — Mobile polish (Header unificado, craft control bar, carousel, mosaic)
+
+#### ✅ O que foi implementado
+
+- **`Header` auto-suficiente:** mobile (fixed + gradiente) e desktop (in-flow) dentro do mesmo componente. `StickyHeader.tsx` deletado. Nunca recriar wrapper externo de header.
+- **Gradiente do header reduzido:** 80px → 24px. `pt` das páginas: 200px → 144px (craft: 156px com 12px de respiro).
+- **Mosaic centralizado:** `top: "50%"` + `transform: "translateY(-50%)"` no container. Sem `height: "100%"`. Animação 240s → 120s.
+- **Tagline home centralizada no mobile:** `absolute top-1/2 -translate-y-1/2` (dentro do container `relative h-full`). Desktop restaurado com `md:static md:translate-y-0`.
+- **Backdrop blur removido** do overlay de contato mobile (home).
+- **Craft carousel mobile:** padding lateral 20px (`-mx-5` dentro de `px-10`), gap 20px, imagens com `h-auto` (height natural pela proporção).
+- **Craft control bar:** `fixed bottom-0`, pills Prev/Next + Back to top, estilo idêntico às tags de contato da home (`backgroundColor: "#F6F3E6"`, `border: "1px solid #D0D1B3"`, `boxShadow`). Aparece via `IntersectionObserver` nas pills (`rootMargin: "-144px 0px 0px 0px"`).
+- **Spring animation na control bar:** `@keyframes control-bar-enter` + `cubic-bezier(0.34, 1.56, 0.64, 1)` — efeito de quicar ao aparecer.
+- **Branch `feat/mobile` deletada:** estava totalmente contida na `main`.
+
+#### ❌ Erros cometidos — NÃO repetir
+
+1. **`top: "50%"` sem `transform: "translateY(-50%)"` no mosaic.**
+   - Erro: joguei o topo da imagem para o centro da tela em vez de centralizar a imagem.
+   - Correto: sempre usar os dois juntos para centralizar um elemento.
+
+2. **`ring-1` + inline `style={{ boxShadow }}` — conflito.**
+   - Erro: `ring` em Tailwind é implementado via `box-shadow`. Ao adicionar `boxShadow` inline, o ring some porque inline style sobrescreve.
+   - Correto: usar `border: "1px solid #D0D1B3"` inline ao invés de `ring`, e adicionar `boxShadow` separadamente. Os dois convivem sem conflito.
+
+3. **z-index do dropdown: tentativas desnecessariamente complexas.**
+   - Tentativas: `z-50` via classe condicional (purgado pelo Tailwind), `z-[9999]` inline (passava por cima do header ao rolar), `position: fixed` com ref para medir trigger (complexidade desnecessária).
+   - Correto: `z-index: 30` (abaixo do header z-40) + posicionar o conteúdo do dropdown abaixo da zona do gradiente. O header não sobrepõe porque o dropdown começa depois do gradiente, e ao rolar passa atrás do header naturalmente.
+
+4. **Alterar padding do dropdown sem ter sido solicitado.**
+   - Erro: ao reposicionar o painel (`top: 0`), mudei o padding interno do botão sem pedido.
+   - Regra: só alterar o que foi explicitamente pedido. Mudanças não solicitadas geram regressões visuais e frustração.
+
+5. **Duas fontes de verdade para o espaçamento do header.**
+   - Erro: `pt-10` estava no wrapper (`StickyHeader`) e no container (`PageLayout`), criando dois padrões incompatíveis.
+   - Correto: o espaçamento pertence ao `Header` — um componente, uma responsabilidade.
