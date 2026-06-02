@@ -20,7 +20,7 @@ export default function Home() {
       backgroundLayers={
         <>
           {/* Mosaic background — z-0 */}
-          <div className="absolute right-0 top-0 h-full w-[1272px] overflow-hidden z-0">
+          <div className="absolute right-0 top-0 h-full w-full md:w-[1272px] overflow-hidden z-0">
             <div className="flex flex-col animate-mosaic-scroll">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -47,7 +47,7 @@ export default function Home() {
         <div className="flex items-center gap-4 pl-6 pr-5 h-[56px] rounded-full bg-[#F3F2E6] hover:bg-[#F6F3E6] hover:ring-1 hover:ring-[#DEDDCE] transition-colors">
           <button
             onClick={copyEmail}
-            className="p-0 leading-none bg-transparent border-0 font-fenix text-[20px] text-text-default hover:text-text-active transition-colors cursor-pointer"
+            className="p-0 leading-none bg-transparent border-0 font-fenix text-[16px] md:text-[20px] text-text-default hover:text-text-active transition-colors cursor-pointer"
           >
             {copied ? "copied!" : "hello@douglima.work"}
           </button>

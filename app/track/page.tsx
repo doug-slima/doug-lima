@@ -99,7 +99,57 @@ export default function Track() {
   const { atEnd, paddingTop, paddingBottom, rightColLeft } = state;
 
   return (
-    <div className="bg-bg-base h-screen overflow-hidden relative">
+    <>
+
+      {/* ── Mobile layout ───────────────────────────────────────────── */}
+      <div className="block md:hidden bg-bg-base min-h-screen">
+        <div className="px-6 pt-10 pb-20 flex flex-col">
+
+          <Header />
+
+          <div className="mt-8">
+            <p className="font-geist font-light text-[28px] leading-tight text-text-default">
+              20 years across<br />
+              Design, Experiences<br />
+              and Technology.
+            </p>
+          </div>
+
+          <p className="mt-8 font-fenix text-[20px] text-text-default">a few steps:</p>
+
+          <div className="mt-6 flex flex-col">
+            {timeline.map((entry, i) => (
+              <div key={i} className="flex flex-row items-center gap-4 py-4 border-b border-[#DEDDCE]">
+                <span className="font-geist font-semibold text-[18px] text-text-default flex-shrink-0 w-[40px]">
+                  {entry.year}
+                </span>
+                <div className="flex-1 flex flex-col min-w-0">
+                  {entry.lines.map((line, j) => {
+                    const cls =
+                      line.style === "bold"
+                        ? "font-geist font-semibold text-[18px] text-text-default"
+                        : line.style === "serif"
+                        ? "font-fenix text-[18px] text-text-default"
+                        : "font-geist font-light text-[18px] text-text-default";
+                    return <span key={j} className={cls}>{line.text}</span>;
+                  })}
+                </div>
+                <div className="flex-shrink-0 w-[72px] flex items-center justify-end">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={entry.logo.src} alt={entry.logo.alt} className="max-h-[36px] max-w-full object-contain" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/home/dl-monogram.svg" alt="" aria-hidden="true" className="w-[64px] mt-12" />
+
+        </div>
+      </div>
+
+      {/* ── Desktop layout ──────────────────────────────────────────── */}
+    <div className="hidden md:block bg-bg-base h-screen overflow-hidden relative">
 
       <ScrollColumn
         ref={rightColRef}
@@ -178,5 +228,7 @@ export default function Track() {
       </div>
 
     </div>
+
+    </>
   );
 }

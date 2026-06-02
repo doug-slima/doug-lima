@@ -37,11 +37,11 @@ export default function PageLayout({
   return (
     <div className={`bg-bg-base ${outerClassName}`}>
       {backgroundLayers}
-      <div className={`px-[10.5rem] pt-20 pb-20 flex flex-col ${contentClassName}`}>
+      <div className={`px-6 md:px-[10.5rem] pt-20 pb-20 flex flex-col ${contentClassName}`}>
         <Header />
         {children}
         {footerContent !== undefined && (
-          <footer className="mt-auto flex items-center justify-between">
+          <footer className="mt-auto flex flex-col gap-4 items-start md:flex-row md:items-center md:justify-between">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/home/dl-monogram.svg"
