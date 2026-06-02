@@ -49,7 +49,7 @@ export default function NavSelector({
           <button
             key={item.label}
             onClick={item.onClick}
-            className={`${itemClass(item.active, variant)} bg-transparent border-0 py-0 cursor-pointer text-left`}
+            className={`${itemClass(item.active, variant)} border-0 py-0 cursor-pointer text-left`}
           >
             {item.label}
           </button>
