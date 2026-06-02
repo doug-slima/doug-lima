@@ -50,6 +50,7 @@ export default function NavSelector({
             key={item.label}
             onClick={item.onClick}
             className={`${itemClass(item.active, variant)} border-0 py-0 cursor-pointer text-left`}
+            style={item.active && variant === "pill" ? { backgroundColor: "#C7FF04" } : undefined}
           >
             {item.label}
           </button>
