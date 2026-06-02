@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowRight, ArrowUp, CaretRight, CaretDown } from "@phosphor-icons/react";
 import Header from "../components/Header";
+import NavSelector from "../components/NavSelector";
 import { useSplitLayout } from "../hooks/useSplitLayout";
 import { craftProjects, type Section } from "./data";
 import ProjectCarousel from "./ProjectCarousel";
@@ -78,7 +79,7 @@ export default function Craft() {
           <Header />
 
           {/* Section dropdown */}
-          <div ref={sectionDropdownRef} className="mt-0 relative">
+          <div ref={sectionDropdownRef} className="mt-0 relative z-20">
             {/* Trigger — sempre no DOM para segurar o espaço de layout */}
             <button
               onClick={() => setSectionDropdownOpen(true)}
@@ -125,20 +126,15 @@ export default function Craft() {
           {!showPasswordGate && (
             <>
               {/* Project selector — horizontal scroll */}
-              <div className="flex flex-row gap-3 overflow-x-auto pb-2 mt-6 -mx-6 px-6">
-                {currentProjects.map((p) => (
-                  <button
-                    key={p.name}
-                    onClick={() => setActiveProject(p.name)}
-                    className={`flex-shrink-0 h-[36px] px-4 rounded-full font-fenix text-[16px] border-0 cursor-pointer transition-all ${
-                      p.name === activeProject
-                        ? "ring-1 ring-[#3B4028] text-text-active bg-transparent"
-                        : "bg-[#A6AA74]/20 text-[#3B4028]"
-                    }`}
-                  >
-                    {p.name}
-                  </button>
-                ))}
+              <div className="mt-6 overflow-x-auto pb-2">
+                <NavSelector
+                  items={currentProjects.map((p) => ({
+                    label: p.name,
+                    active: p.name === activeProject,
+                    onClick: () => setActiveProject(p.name),
+                  }))}
+                  gap={8}
+                />
               </div>
 
               {/* Info block */}
