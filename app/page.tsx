@@ -38,8 +38,13 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Header blur overlay — z-10 */}
-            <BlurOverlay />
+            {/* Desktop: full opacity overlay */}
+            <BlurOverlay className="hidden md:block absolute top-0 left-0 right-0" />
+            {/* Mobile: lighter overlay — lets more mosaic show through */}
+            <div
+              className="block md:hidden absolute top-0 left-0 right-0 h-[185px] z-10 pointer-events-none"
+              style={{ background: "linear-gradient(to bottom, rgba(249,249,242,0.65) 0%, rgba(249,249,242,0.4) 50%, rgba(249,249,242,0) 100%)" }}
+            />
           </>
         }
         footerContent={
