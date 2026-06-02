@@ -78,14 +78,28 @@ export default function Craft() {
           <Header />
 
           {/* Section dropdown */}
-          <div ref={sectionDropdownRef} className="mt-0">
-            {sectionDropdownOpen ? (
-              /* Open: o container envolve tudo — sem trigger separado */
+          <div ref={sectionDropdownRef} className="mt-0 relative">
+            {/* Trigger — sempre no DOM para segurar o espaço de layout */}
+            <button
+              onClick={() => setSectionDropdownOpen(true)}
+              className={`flex items-center gap-2 font-geist font-light text-[24px] leading-tight text-text-active bg-transparent border-0 p-0 cursor-pointer ${sectionDropdownOpen ? "invisible" : ""}`}
+            >
+              {activeSection === "playground" ? "Playground" : "Selected Works"}
+              <CaretRight size={20} color="#3B4028" />
+            </button>
+
+            {/* Open: container absoluto com offset negativo que compensa o padding,
+                mantendo o texto exatamente na mesma posição do trigger */}
+            {sectionDropdownOpen && (
               <div
-                className="w-fit rounded-xl flex flex-col z-30"
-                style={{ backgroundColor: "#F6F3E6", border: "1px solid #AFB4A7" }}
+                className="absolute w-fit rounded-xl flex flex-col z-30"
+                style={{
+                  top: -20,
+                  left: -20,
+                  backgroundColor: "#F6F3E6",
+                  border: "1px solid #AFB4A7",
+                }}
               >
-                {/* Seção ativa — fecha o dropdown */}
                 <button
                   onClick={() => setSectionDropdownOpen(false)}
                   className="flex items-center gap-2 font-geist font-light text-[24px] leading-tight text-text-active bg-transparent border-0 cursor-pointer text-left"
@@ -94,7 +108,6 @@ export default function Craft() {
                   {activeSection === "playground" ? "Playground" : "Selected Works"}
                   <CaretDown size={20} color="#3B4028" />
                 </button>
-                {/* Seção inativa — troca e fecha */}
                 <button
                   onClick={() => {
                     handleSectionChange(activeSection === "playground" ? "selected-works" : "playground");
@@ -106,15 +119,6 @@ export default function Craft() {
                   {activeSection === "playground" ? "Selected Works" : "Playground"}
                 </button>
               </div>
-            ) : (
-              /* Fechado: trigger simples sem container */
-              <button
-                onClick={() => setSectionDropdownOpen(true)}
-                className="flex items-center gap-2 font-geist font-light text-[24px] leading-tight text-text-active bg-transparent border-0 p-0 cursor-pointer"
-              >
-                {activeSection === "playground" ? "Playground" : "Selected Works"}
-                <CaretRight size={20} color="#3B4028" />
-              </button>
             )}
           </div>
 
