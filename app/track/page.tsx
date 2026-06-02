@@ -2,7 +2,6 @@
 
 import { ArrowUp } from "@phosphor-icons/react";
 import Header from "../components/Header";
-import StickyHeader from "../components/StickyHeader";
 import ScrollColumn from "../components/ScrollColumn";
 import TimelineBlock, { TimelineEntry } from "../components/TimelineBlock";
 import { useSplitLayout } from "../hooks/useSplitLayout";
@@ -105,9 +104,9 @@ export default function Track() {
       {/* ── Mobile layout ───────────────────────────────────────────── */}
       <div className="block md:hidden bg-bg-base min-h-screen">
 
-        <StickyHeader />
+        <Header />
 
-        <div className="px-10 pt-[200px] pb-10 flex flex-col">
+        <div className="px-10 pt-[144px] pb-10 flex flex-col">
 
           <div className="mt-0">
             <p className="font-geist font-light text-[28px] leading-tight text-text-default">

@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ArrowRight, ArrowUp, CaretRight, CaretDown } from "@phosphor-icons/react";
+import { ArrowRight, ArrowUp, CaretLeft, CaretRight, CaretDown } from "@phosphor-icons/react";
 import Header from "../components/Header";
-import StickyHeader from "../components/StickyHeader";
 import NavSelector from "../components/NavSelector";
 import { useSplitLayout } from "../hooks/useSplitLayout";
 import { craftProjects, type Section } from "./data";
@@ -19,7 +18,9 @@ export default function Craft() {
   const [authError, setAuthError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sectionDropdownOpen, setSectionDropdownOpen] = useState(false);
+  const [controlBarVisible, setControlBarVisible] = useState(false);
   const sectionDropdownRef = useRef<HTMLDivElement>(null);
+  const pillsRef = useRef<HTMLDivElement>(null);
 
   const { refs, state, scrollToTop } = useSplitLayout([activeProject]);
   const { rightColRef, leftContentRef, firstItemRef, lastItemRef } = refs;
@@ -33,6 +34,16 @@ export default function Craft() {
     if (section !== "selected-works") setIsAuthenticated(false);
     setActiveSection(section);
     setActiveProject(craftProjects[section][0].name);
+  }
+
+  function handlePrev() {
+    const idx = currentProjects.findIndex((p) => p.name === activeProject);
+    if (idx > 0) setActiveProject(currentProjects[idx - 1].name);
+  }
+
+  function handleNext() {
+    const idx = currentProjects.findIndex((p) => p.name === activeProject);
+    if (idx < currentProjects.length - 1) setActiveProject(currentProjects[idx + 1].name);
   }
 
   async function handleSubmit() {
@@ -70,18 +81,29 @@ export default function Craft() {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [sectionDropdownOpen]);
 
+  useEffect(() => {
+    const el = pillsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setControlBarVisible(!entry.isIntersecting),
+      { rootMargin: "-144px 0px 0px 0px", threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [showPasswordGate]);
+
   return (
     <>
 
       {/* ── Mobile layout ───────────────────────────────────────────── */}
       <div className="block md:hidden bg-bg-base min-h-screen">
 
-        <StickyHeader />
+        <Header />
 
-        <div className="px-10 pt-[200px] pb-10 flex flex-col">
+        <div className="px-10 pt-[156px] pb-[120px] flex flex-col">
 
           {/* Section dropdown */}
-          <div ref={sectionDropdownRef} className="mt-0 relative z-20">
+          <div ref={sectionDropdownRef} className="mt-0 relative">
             {/* Trigger — sempre no DOM para segurar o espaço de layout */}
             <button
               onClick={() => setSectionDropdownOpen(true)}
@@ -91,16 +113,17 @@ export default function Craft() {
               <CaretRight size={20} color="#3B4028" />
             </button>
 
-            {/* Open: container absoluto com offset negativo que compensa o padding,
-                mantendo o texto exatamente na mesma posição do trigger */}
+            {/* Open: fixed abaixo do header (144px), nunca sobreposto por ele */}
             {sectionDropdownOpen && (
               <div
-                className="absolute w-fit rounded-xl flex flex-col z-30"
+                className="absolute w-fit rounded-xl flex flex-col"
                 style={{
                   top: -20,
                   left: -20,
+                  zIndex: 30,
                   backgroundColor: "#F6F3E6",
                   border: "1px solid #AFB4A7",
+                  boxShadow: "0 4px 12px -8px rgba(0,0,0,0.25)",
                 }}
               >
                 <button
@@ -128,7 +151,7 @@ export default function Craft() {
           {!showPasswordGate && (
             <>
               {/* Project selector — horizontal scroll */}
-              <div className="mt-6 -mx-10 px-10 overflow-x-auto pb-2">
+              <div ref={pillsRef} className="mt-6 -mx-10 px-10 overflow-x-auto pb-2">
                 <NavSelector
                   items={currentProjects.map((p) => ({
                     label: p.name,
@@ -156,20 +179,18 @@ export default function Craft() {
               </div>
 
               {/* Images stacked */}
-              <div className="mt-6 flex flex-col gap-4">
+              <div className="mt-6 -mx-5 flex flex-col gap-5">
                 {currentProject.images.map((src, i) => {
                   const isLast = i === currentProject.images.length - 1;
                   const hug = isLast && currentProject.hugLast;
                   return (
                     <div
                       key={i}
-                      className={`w-full rounded-lg overflow-hidden bg-surface-tag flex items-center justify-center ${
-                        hug ? "h-auto" : "h-[220px]"
-                      }`}
+                      className="w-full overflow-hidden"
                     >
                       {src ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={src} alt="" className="w-full h-full object-cover" />
+                        <img src={src} alt="" className="w-full h-auto block" />
                       ) : (
                         <span className="font-geist font-light text-[18px] text-text-muted opacity-40">
                           {currentProject.name}
@@ -223,6 +244,36 @@ export default function Craft() {
           </div>
         )}
       </div>
+
+      {/* ── Control bar — mobile only ───────────────────────────────── */}
+      {!showPasswordGate && controlBarVisible && (
+        <div className="control-bar-enter md:hidden fixed bottom-0 left-0 right-0 z-30 px-10 pb-10 flex gap-[10px]">
+          {/* Prev / Next */}
+          <div className="flex-1 h-[56px] rounded-full flex items-center overflow-hidden" style={{ backgroundColor: "#F6F3E6", border: "1px solid #D0D1B3", boxShadow: "0px 4px 12px -8px rgba(0,0,0,0.25)" }}>
+            <button
+              onClick={handlePrev}
+              className="flex-1 h-full flex items-center justify-center gap-2 font-fenix text-[18px] text-text-default bg-transparent border-0 cursor-pointer"
+            >
+              <CaretLeft size={18} /> Prev
+            </button>
+            <div className="w-px h-6 bg-[#DEDDCE]" />
+            <button
+              onClick={handleNext}
+              className="flex-1 h-full flex items-center justify-center gap-2 font-fenix text-[18px] text-text-default bg-transparent border-0 cursor-pointer"
+            >
+              Next <CaretRight size={18} />
+            </button>
+          </div>
+          {/* Back to top */}
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="h-[56px] px-5 rounded-full flex items-center gap-2 font-fenix text-[18px] text-text-default cursor-pointer"
+            style={{ backgroundColor: "#F6F3E6", border: "1px solid #D0D1B3", boxShadow: "0px 4px 12px -8px rgba(0,0,0,0.25)" }}
+          >
+            Back to top <ArrowUp size={18} />
+          </button>
+        </div>
+      )}
 
       {/* ── Desktop layout ──────────────────────────────────────────── */}
     <div className="hidden md:block bg-bg-base h-dvh overflow-hidden relative">

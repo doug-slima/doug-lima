@@ -74,7 +74,7 @@ export default function Home() {
         }
       >
         {/* Tagline */}
-        <div className="mt-0 md:mt-8">
+        <div className="absolute top-1/2 -translate-y-1/2 md:static md:translate-y-0 md:mt-8">
           <p className="font-geist font-light text-[40px] leading-tight text-text-default">
             Curious
             <br />
@@ -87,7 +87,7 @@ export default function Home() {
       {contactOpen && (
         <div
           className="fixed inset-0 z-50 md:hidden"
-          style={{ backgroundColor: "rgba(243, 242, 230, 0.10)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
+          style={{ backgroundColor: "rgba(243, 242, 230, 0.10)" }}
           onClick={() => setContactOpen(false)}
         >
           <div

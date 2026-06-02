@@ -15,8 +15,8 @@ const CONTAINER_WIDTH = 1272;
 
 const containerStyle: React.CSSProperties = {
   position: "absolute",
-  top: 0,
-  height: "100%",
+  top: "50%",
+  transform: "translateY(-50%)",
   width: `${CONTAINER_WIDTH}px`,
   overflow: "hidden",
   zIndex: 0,
@@ -25,7 +25,7 @@ const containerStyle: React.CSSProperties = {
 const scrollerStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  animation: "mosaic-scroll 240s linear infinite",
+  animation: "mosaic-scroll 120s linear infinite",
 };
 
 const imgStyle: React.CSSProperties = {

@@ -37,7 +37,7 @@ export default function PageLayout({
   return (
     <div className={`bg-bg-base ${outerClassName}`}>
       {backgroundLayers}
-      <div className={`px-10 md:px-[10.5rem] pt-10 md:pt-20 pb-10 md:pb-20 flex flex-col ${contentClassName}`}>
+      <div className={`px-10 md:px-[10.5rem] pt-[144px] md:pt-20 pb-10 md:pb-20 flex flex-col ${contentClassName}`}>
         <Header />
         {children}
         {footerContent !== undefined && (
