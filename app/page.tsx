@@ -47,7 +47,7 @@ export default function Home() {
             {/* Mobile: avatar toggle — 104px circle, no surface, avatar centered */}
             <button
               onClick={() => setContactOpen(true)}
-              className="block md:hidden w-[104px] h-[104px] rounded-full p-0 border-0 bg-transparent cursor-pointer flex items-center justify-center"
+              className="flex md:hidden w-[104px] h-[104px] rounded-full p-0 border-0 bg-transparent cursor-pointer items-center justify-center"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/assets/home/avatar-doug.png" alt="Contact" className="h-[56px] w-[56px] object-contain" />
@@ -96,7 +96,7 @@ export default function Home() {
       {contactOpen && (
         <div
           className="fixed inset-0 z-50 md:hidden"
-          style={{ backgroundColor: "rgba(243, 242, 230, 0.25)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
+          style={{ backgroundColor: "rgba(243, 242, 230, 0.10)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
           onClick={() => setContactOpen(false)}
         >
           <div
