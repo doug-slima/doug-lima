@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <>
       <PageLayout
-        outerClassName="relative h-screen overflow-hidden"
+        outerClassName="relative h-dvh overflow-hidden"
         contentClassName="relative z-20 h-full"
         backgroundLayers={
           <>

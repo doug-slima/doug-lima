@@ -149,7 +149,7 @@ export default function Track() {
       </div>
 
       {/* ── Desktop layout ──────────────────────────────────────────── */}
-    <div className="hidden md:block bg-bg-base h-screen overflow-hidden relative">
+    <div className="hidden md:block bg-bg-base h-dvh overflow-hidden relative">
 
       <ScrollColumn
         ref={rightColRef}

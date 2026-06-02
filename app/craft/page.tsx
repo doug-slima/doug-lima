@@ -191,7 +191,7 @@ export default function Craft() {
       </div>
 
       {/* ── Desktop layout ──────────────────────────────────────────── */}
-    <div className="hidden md:block bg-bg-base h-screen overflow-hidden relative">
+    <div className="hidden md:block bg-bg-base h-dvh overflow-hidden relative">
 
       <ProjectCarousel
         project={currentProject}
