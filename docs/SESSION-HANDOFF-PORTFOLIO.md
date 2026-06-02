@@ -1,7 +1,7 @@
 # SESSION HANDOFF — douglima.work Portfolio
 
 > Documento de contexto para continuidade entre sessões.
-> Última atualização: 01 jun 2026 — Sessão 7 (correções pré-mobile: ordem da timeline, tamanho de font ✅)
+> Última atualização: 02 jun 2026 — Sessão 8 (mobile: StickyHeader, pills, scroll full-bleed, dropdown) ✅
 
 ---
 
@@ -200,6 +200,31 @@ Posição: `absolute left-[10.5rem] top-1/2 -translate-y-1/2`.
 
 *(inalterados — ver sessão 5)*
 
+### 7.11 `app/components/StickyHeader.tsx`
+
+Header fixo para mobile nas páginas /craft e /track. **NÃO usar na home** — a home usa `PageLayout` com `h-dvh overflow-hidden` e não precisa de fixed header.
+
+```tsx
+// Estrutura:
+<div fixed top-0 left-0 right-0 z-40 pointer-events-none>
+  <div pointer-events-auto bg-bg-base px-10 pt-10>
+    <Header />  // py-6 md:py-0 → adiciona 24+24px mobile
+  </div>
+  <div style={{ height: "80px", background: "linear-gradient(#F9F9F2 → transparent)" }} />
+</div>
+```
+
+**Alturas:**
+- Wrapper `pt-10` = 40px
+- Header `py-6` top = 24px + img 32px + bottom 24px = 80px
+- **Total sólido = 120px**
+- Gradiente abaixo = 80px (pointer-events-none)
+- **Total visual = 200px**
+
+**Conteúdo nas páginas:** usar `pt-[200px]` no content div para que o dropdown comece ABAIXO do gradiente. Ao scrollar, o conteúdo passa por trás do header com fade natural.
+
+**REGRA:** O `pt-10` no wrapper é obrigatório — sem ele o header fica visivelmente diferente da home (logo colado ao topo em vez de 40px de respiro).
+
 ---
 
 ## 8. Padrão Split Layout (track + craft)
@@ -207,7 +232,7 @@ Posição: `absolute left-[10.5rem] top-1/2 -translate-y-1/2`.
 ### Estrutura
 
 ```
-<div bg-bg-base h-screen overflow-hidden relative>
+<div bg-bg-base h-dvh overflow-hidden relative>
 
   {/* Coluna direita — scroll interno */}
   <ScrollColumn ref={rightColRef} absolute inset-y-0 right-0 z-0
@@ -313,12 +338,13 @@ O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé
 
 ## 12. Pendências finais (Sessão 8 — próxima)
 
-- [ ] **Responsivo (mobile/tablet)** ← próxima sessão, abrir branch `feat/mobile`
+- [x] **Responsivo mobile — Home, Track, Craft** ← feito na sessão 8
 - [ ] **Selected Works — dados reais** — Doug exporta assets, Claude Code popula `data.ts`
 - [ ] **Variável `NDA_PASSWORD` na Vercel** — adicionar no painel antes do deploy (`dvault`)
 - [ ] Meta tags (og:image, description, favicon)
 - [ ] Transições entre páginas
 - [ ] Cloudflare Email Routing (`hello@douglima.work` → Gmail)
+- [ ] Deletar `app/craft/PasswordGate.tsx` (legado, não usado)
 - [ ] **git push + deploy final** ← etapa de fechamento
 
 ---
@@ -345,6 +371,7 @@ doug-lima/
 │   │   ├── PageLayout.tsx            # Layout padrão: paddings + header + footer items-center
 │   │   ├── BlurOverlay.tsx           # Gradiente fade 185px
 │   │   ├── ScrollColumn.tsx          # overflow-y-auto + BlurOverlay embutido
+│   │   ├── StickyHeader.tsx          # Header fixo para mobile (craft + track)
 │   │   └── TimelineBlock.tsx         # Bloco da timeline (ano | texto | logo)
 │   ├── hooks/
 │   │   └── useSplitLayout.ts         # Hook split layout — IntersectionObserver p/ atEnd
@@ -413,3 +440,39 @@ doug-lima/
 ### Sessão 7
 - **Ordem de dados em arrays:** a ordem de exibição do carrossel segue exatamente a ordem de declaração do array em `page.tsx`. Para inverter a timeline, basta reordenar o array — não há lógica de sort automático.
 - **Consistência de font sizes:** elementos visuais análogos em páginas diferentes (label lateral da /track e seletores verticais da /craft) devem usar o mesmo tamanho de fonte. Ambos em `font-fenix text-[24px]`.
+
+### Sessão 8 — Mobile (craft + track)
+
+#### ✅ O que foi implementado
+- **`h-dvh` obrigatório no mobile:** `h-screen` = 100vh não adapta ao browser chrome do iOS (Chrome/Safari). `h-dvh` = 100dvh adapta. Usar sempre `h-dvh` em containers de altura total.
+- **`MosaicBackground` isolado com inline styles:** Tailwind purga classes arbitrárias (`w-[1272px]`, `left-[Xpx]`) quando o bundle é regenerado por mudanças não relacionadas. Solução permanente: extrair para componente com **todos os estilos críticos como `React.CSSProperties` inline**. Positioning responsivo via `.mosaic-container` (named class em globals.css). Nunca usar classes Tailwind arbitrárias para este componente.
+- **Mobile section dropdown (craft):** trigger `invisible` (ocupa espaço no layout), dropdown com `position: absolute; top: -20px; left: -20px` para alinhar o texto do painel com o texto do trigger. `z-20` no wrapper, `z-30` no painel. Click-outside handler via `useEffect` + `mousedown`.
+- **Pills de projeto unificadas com NavSelector:** mesma API, mesma variante `"pill"`. `direction="row"`, `gap={8}`.
+- **Scroll full-bleed em pills:** para scroll horizontal que extrapola o padding do pai, usar `-mx-10 px-10` no container de scroll. O `-mx-[padding]` cancela o padding do pai e `px-[padding]` recoloca como internal padding, permitindo scroll até a borda da tela.
+- **`StickyHeader` component:** ver seção 7.11.
+
+#### ❌ Erros cometidos — NÃO repetir
+
+1. **Não ler `PageLayout` antes de calcular altura do header.**
+   - Erro: assumi que a altura do header era só `py-6 + img = 80px`, ignorando o `pt-10` do container em `PageLayout`.
+   - Correto: o header visual na home começa a 40px do topo (pt-10 do container). `StickyHeader` deve replicar esse `pt-10`. Total sólido = **120px**.
+
+2. **Gradiente sobrepondo conteúdo.**
+   - Erro: definir `pt-[120px]` no content div enquanto o gradiente de 80px começava em 120px — o dropdown ficava dentro da zona do fade.
+   - Correto: `pt` do content = header sólido (120px) + gradiente (80px) = **`pt-[200px]`**.
+
+3. **Tailwind class `h-[64px]` sendo purgada no gradiente.**
+   - Erro: usar `className="h-16"` (ou `h-[64px]`) em elemento crítico.
+   - Correto: usar `style={{ height: "80px" }}` inline para o div do gradiente.
+
+4. **`bg-transparent` em className de button sobrepondo `bg-[#C7FF04]`.**
+   - Erro: a classe `bg-transparent` estava sendo adicionada ao className do button ativo via `border-0 py-0 cursor-pointer text-left`, e como `bg-transparent` vem depois de `bg-[#C7FF04]` no bundle CSS, ela vencia.
+   - Correto: aplicar cor de fundo ativa via inline style — `style={item.active && variant === "pill" ? { backgroundColor: "#C7FF04" } : undefined}`. Inline style sempre vence qualquer classe Tailwind.
+
+5. **Inventar gradiente sem checar o que já existia.**
+   - Erro: criei múltiplas versões de gradiente no `StickyHeader` sem antes verificar como `BlurOverlay` funciona.
+   - Correto: ler `BlurOverlay.tsx` primeiro. O gradiente correto é `linear-gradient(to bottom, #F9F9F2 0%, rgba(249,249,242,0) 100%)`.
+
+6. **`pointer-events-none` no wrapper do gradiente sem restaurar no conteúdo.**
+   - Erro: marcar o outer fixed div como `pointer-events-none` sem marcar o header interno como `pointer-events-auto` — resultado: header iclicável.
+   - Correto: `pointer-events-none` no outer wrapper, `pointer-events-auto` no div do header sólido.
