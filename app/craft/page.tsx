@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowRight, ArrowUp, CaretRight, CaretDown } from "@phosphor-icons/react";
 import Header from "../components/Header";
+import StickyHeader from "../components/StickyHeader";
 import NavSelector from "../components/NavSelector";
 import { useSplitLayout } from "../hooks/useSplitLayout";
 import { craftProjects, type Section } from "./data";
@@ -75,10 +76,7 @@ export default function Craft() {
       {/* ── Mobile layout ───────────────────────────────────────────── */}
       <div className="block md:hidden bg-bg-base min-h-screen">
 
-        {/* Fixed header */}
-        <div className="fixed top-0 left-0 right-0 z-40 bg-bg-base px-10">
-          <Header />
-        </div>
+        <StickyHeader />
 
         <div className="px-10 pt-[80px] pb-10 flex flex-col">
 
