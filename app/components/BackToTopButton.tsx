@@ -11,7 +11,7 @@ export default function BackToTopButton({ paddingBottom, zIndex = 30 }: BackToTo
   return (
     <div
       className="control-bar-enter md:hidden fixed bottom-0 left-0 right-0 px-10 flex justify-end"
-      style={{ paddingBottom: `${paddingBottom}px`, zIndex, pointerEvents: "none" }}
+      style={{ paddingBottom: `calc(${paddingBottom}px + env(safe-area-inset-bottom))`, zIndex, pointerEvents: "none" }}
     >
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

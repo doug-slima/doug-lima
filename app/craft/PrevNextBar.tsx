@@ -11,7 +11,7 @@ export default function PrevNextBar({ onPrev, onNext }: PrevNextBarProps) {
   return (
     <div
       className="md:hidden fixed bottom-0 left-0 right-0 z-[20]"
-      style={{ backgroundColor: "#313621", paddingTop: "24px", paddingBottom: "24px" }}
+      style={{ backgroundColor: "#313621", paddingTop: "24px", paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}
     >
       <div
         className="mx-10 h-[56px] rounded-full flex items-center justify-between px-5"

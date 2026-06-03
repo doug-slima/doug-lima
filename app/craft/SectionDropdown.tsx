@@ -20,12 +20,18 @@ const other = (s: Section): Section =>
 export default function SectionDropdown({ activeSection, onSectionChange }: SectionDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const close = () => {
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  };
 
   useEffect(() => {
     if (!isOpen) return;
     function onOutsideClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
+        close();
       }
     }
     document.addEventListener("mousedown", onOutsideClick);
@@ -35,6 +41,7 @@ export default function SectionDropdown({ activeSection, onSectionChange }: Sect
   return (
     <div ref={containerRef} className="relative">
       <button
+        ref={triggerRef}
         onClick={() => setIsOpen(true)}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
@@ -60,7 +67,7 @@ export default function SectionDropdown({ activeSection, onSectionChange }: Sect
           <button
             role="option"
             aria-selected
-            onClick={() => setIsOpen(false)}
+            onClick={close}
             className="flex items-center gap-2 font-geist font-light text-[24px] leading-tight text-text-active bg-transparent border-0 cursor-pointer text-left"
             style={{ padding: "20px 20px 8px 20px" }}
           >
@@ -72,7 +79,7 @@ export default function SectionDropdown({ activeSection, onSectionChange }: Sect
             aria-selected={false}
             onClick={() => {
               onSectionChange(other(activeSection));
-              setIsOpen(false);
+              close();
             }}
             className="font-geist font-light text-[24px] leading-tight bg-transparent border-0 cursor-pointer text-left"
             style={{ padding: "4px 20px 20px 20px", color: "#A6AA74" }}
