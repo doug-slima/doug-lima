@@ -18,6 +18,7 @@ export default function Craft() {
   const [authError, setAuthError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sectionDropdownOpen, setSectionDropdownOpen] = useState(false);
+  const [footerRevealed, setFooterRevealed] = useState(false);
   const [controlBarVisible, setControlBarVisible] = useState(false);
   const sectionDropdownRef = useRef<HTMLDivElement>(null);
   const pillsRef = useRef<HTMLDivElement>(null);
@@ -92,15 +93,35 @@ export default function Craft() {
     return () => observer.disconnect();
   }, [showPasswordGate]);
 
+  useEffect(() => {
+    const onScroll = () => {
+      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 10;
+      setFooterRevealed(atBottom);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <>
 
       {/* ── Mobile layout ───────────────────────────────────────────── */}
-      <div className="block md:hidden bg-bg-base min-h-screen">
+      <div className="block md:hidden" style={{ backgroundColor: "#313621" }}>
+
+        <div
+          className="bg-bg-base rounded-b-[24px]"
+          style={{
+            position: "relative",
+            zIndex: 30,
+            boxShadow: "0px 16px 48px -8px rgba(12,12,13,0.50)",
+            transform: footerRevealed ? "translateY(-104px)" : "translateY(0)",
+            transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+          }}
+        >
 
         <Header />
 
-        <div className="px-10 pt-[156px] pb-[120px] flex flex-col">
+        <div className="px-10 pt-[156px] pb-8 flex flex-col">
 
           {/* Section dropdown */}
           <div ref={sectionDropdownRef} className="mt-0 relative">
@@ -163,23 +184,23 @@ export default function Craft() {
               </div>
 
               {/* Info block */}
-              <div className="mt-6 flex items-center justify-between">
+              <div className="mt-6 flex items-center justify-between" style={{ height: "120px" }}>
                 <div className="flex flex-col">
                   <p className="font-geist font-semibold text-[20px] leading-tight text-text-default">{currentProject.label}</p>
                   <p className="font-geist font-light text-[20px] leading-tight text-text-default">{currentProject.name}</p>
                 </div>
-                <div className="w-[120px] h-[56px] flex items-center justify-end">
+                <div className="w-[220px] flex items-center justify-end">
                   {currentProject.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={currentProject.logo} alt={currentProject.name} className="max-h-full max-w-full object-contain" />
+                    <img src={currentProject.logo} alt={currentProject.name} className="w-full h-auto object-contain" />
                   ) : (
-                    <div className="w-full h-full bg-surface-tag rounded-lg" />
+                    <div className="w-full h-[56px] bg-surface-tag rounded-lg" />
                   )}
                 </div>
               </div>
 
               {/* Images stacked */}
-              <div className="mt-6 -mx-5 flex flex-col gap-5">
+              <div className="mt-6 -mx-7 flex flex-col gap-3">
                 {currentProject.images.map((src, i) => {
                   const isLast = i === currentProject.images.length - 1;
                   const hug = isLast && currentProject.hugLast;
@@ -203,8 +224,10 @@ export default function Craft() {
             </>
           )}
 
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/home/dl-monogram.svg" alt="" aria-hidden="true" className="w-[104px] mt-12" />
+          <div className="mt-8">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/home/dl-monogram.svg" alt="" aria-hidden="true" className="w-[104px]" />
+          </div>
 
         </div>
 
@@ -243,28 +266,12 @@ export default function Craft() {
             </div>
           </div>
         )}
+        </div>{/* /inner card */}
       </div>
 
-      {/* ── Control bar — mobile only ───────────────────────────────── */}
+      {/* ── Back to top — mobile only ───────────────────────────────── */}
       {!showPasswordGate && controlBarVisible && (
-        <div className="control-bar-enter md:hidden fixed bottom-0 left-0 right-0 z-30 px-10 pb-10 flex gap-[10px]">
-          {/* Prev / Next */}
-          <div className="flex-1 h-[56px] rounded-full flex items-center overflow-hidden" style={{ backgroundColor: "#F6F3E6", border: "1px solid #D0D1B3", boxShadow: "0px 4px 12px -8px rgba(0,0,0,0.25)" }}>
-            <button
-              onClick={handlePrev}
-              className="flex-1 h-full flex items-center justify-center gap-2 font-fenix text-[18px] text-text-default bg-transparent border-0 cursor-pointer"
-            >
-              <CaretLeft size={18} /> Prev
-            </button>
-            <div className="w-px h-6 bg-[#DEDDCE]" />
-            <button
-              onClick={handleNext}
-              className="flex-1 h-full flex items-center justify-center gap-2 font-fenix text-[18px] text-text-default bg-transparent border-0 cursor-pointer"
-            >
-              Next <CaretRight size={18} />
-            </button>
-          </div>
-          {/* Back to top */}
+        <div className="control-bar-enter md:hidden fixed bottom-0 left-0 right-0 px-10 flex justify-end" style={{ paddingBottom: "169px", zIndex: 40 }}>
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className="h-[56px] px-5 rounded-full flex items-center gap-2 font-fenix text-[18px] text-text-default cursor-pointer"
@@ -272,6 +279,34 @@ export default function Craft() {
           >
             Back to top <ArrowUp size={18} />
           </button>
+        </div>
+      )}
+
+      {/* ── Prev/Next bar — mobile only ─────────────────────────────── */}
+      {!showPasswordGate && (
+        <div
+          className="md:hidden fixed bottom-0 left-0 right-0 z-[20]"
+          style={{ backgroundColor: "#313621", paddingTop: "24px", paddingBottom: "24px" }}
+        >
+          <div
+            className="mx-10 h-[56px] rounded-full flex items-center justify-between px-5"
+            style={{ backgroundColor: "#121210", boxShadow: "0px 16px 48px -8px rgba(12,12,13,0.50)" }}
+          >
+            <button
+              onClick={handlePrev}
+              className="flex items-center gap-2 font-fenix text-[18px] cursor-pointer border-0 bg-transparent"
+              style={{ color: "#FAFAF5" }}
+            >
+              <CaretLeft size={18} color="#FAFAF5" /> Prev
+            </button>
+            <button
+              onClick={handleNext}
+              className="flex items-center gap-2 font-fenix text-[18px] cursor-pointer border-0 bg-transparent"
+              style={{ color: "#FAFAF5" }}
+            >
+              Next <CaretRight size={18} color="#FAFAF5" />
+            </button>
+          </div>
         </div>
       )}
 

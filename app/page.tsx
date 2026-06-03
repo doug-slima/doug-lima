@@ -74,8 +74,8 @@ export default function Home() {
         }
       >
         {/* Tagline */}
-        <div className="absolute top-1/2 -translate-y-1/2 md:static md:translate-y-0 md:mt-8">
-          <p className="font-geist font-light text-[40px] leading-tight text-text-default">
+        <div className="md:mt-8">
+          <p className="font-geist font-light text-[28px] md:text-[40px] leading-tight text-text-default">
             Curious
             <br />
             Designer

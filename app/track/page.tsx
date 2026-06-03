@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import { ArrowUp } from "@phosphor-icons/react";
 import Header from "../components/Header";
 import ScrollColumn from "../components/ScrollColumn";
@@ -18,17 +19,17 @@ const timeline: TimelineEntry[] = [
   },
   {
     year: "2024",
-    lines: [{ text: "Founding Designer", style: "light" }],
+    lines: [{ text: "Founding Designer", style: "bold" }, { text: "Klauvi", style: "serif" }],
     logo: { src: "/assets/companies-page-track/klauvi-logo.png", alt: "Klauvi" },
   },
   {
     year: "2022",
-    lines: [{ text: "Design Expert", style: "light" }],
+    lines: [{ text: "Design Expert", style: "bold" }, { text: "Mercado Livre", style: "serif" }],
     logo: { src: "/assets/companies-page-track/mercado-livre-logo.png", alt: "Mercado Livre" },
   },
   {
     year: "2021",
-    lines: [{ text: "Design Manager", style: "light" }],
+    lines: [{ text: "Design Manager", style: "bold" }, { text: "Olist", style: "serif" }],
     logo: { src: "/assets/companies-page-track/olist-logo.png", alt: "Olist" },
   },
   {
@@ -42,7 +43,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     year: "2019",
-    lines: [{ text: "Design Lead", style: "light" }],
+    lines: [{ text: "Design Lead", style: "bold" }, { text: "Hash", style: "serif" }],
     logo: { src: "/assets/companies-page-track/hash-logo.png", alt: "Hash" },
   },
   {
@@ -56,26 +57,26 @@ const timeline: TimelineEntry[] = [
   },
   {
     year: "2018",
-    lines: [{ text: "Design Lead", style: "light" }],
+    lines: [{ text: "Design Lead", style: "bold" }, { text: "Kyvo", style: "serif" }],
     logo: { src: "/assets/companies-page-track/kyvo-logo.png", alt: "Kyvo" },
   },
   {
     year: "2018",
-    lines: [{ text: "UX Researcher", style: "light" }],
+    lines: [{ text: "UX Researcher", style: "bold" }, { text: "iFood", style: "serif" }],
     logo: { src: "/assets/companies-page-track/ifood-logo.png", alt: "iFood" },
   },
   {
     year: "2017",
     lines: [
-      { text: "Service Designer", style: "light" },
-      { text: "& Researcher", style: "light" },
+      { text: "Service Designer", style: "bold" },
+      { text: "Livework", style: "serif" },
     ],
     logo: { src: "/assets/companies-page-track/livework-logo.png", alt: "Livework" },
   },
   {
     year: "2014",
     lines: [
-      { text: "Master's Degree in", style: "light" },
+      { text: "Master's Degree in", style: "bold" },
       { text: "Technology & Society", style: "bold" },
       { text: "Unifei/MG", style: "serif" },
     ],
@@ -83,17 +84,31 @@ const timeline: TimelineEntry[] = [
   },
   {
     year: "2012",
-    lines: [{ text: "Service Designer", style: "light" }],
+    lines: [{ text: "Service Designer", style: "bold" }, { text: "Itaú", style: "serif" }],
     logo: { src: "/assets/companies-page-track/itau-logo.png", alt: "Itaú" },
   },
   {
     year: "2011",
-    lines: [{ text: "Service Designer", style: "light" }],
+    lines: [{ text: "Service Designer", style: "bold" }, { text: "Livework", style: "serif" }],
     logo: { src: "/assets/companies-page-track/livework-logo.png", alt: "Livework" },
   },
 ];
 
 export default function Track() {
+  const [controlBarVisible, setControlBarVisible] = useState(false);
+  const timelineRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const el = timelineRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setControlBarVisible(!entry.isIntersecting),
+      { rootMargin: "-144px 0px 0px 0px", threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const { refs, state, scrollToTop } = useSplitLayout();
   const { rightColRef, leftContentRef, firstItemRef, lastItemRef } = refs;
   const { atEnd, paddingTop, paddingBottom, rightColLeft } = state;
@@ -116,31 +131,48 @@ export default function Track() {
             </p>
           </div>
 
-          <p className="mt-8 font-fenix text-[20px] text-text-default">a few steps:</p>
+          <p ref={timelineRef} className="mt-8 font-fenix text-[20px] text-text-default">a few steps:</p>
 
-          <div className="mt-6 flex flex-col">
-            {timeline.map((entry, i) => (
-              <div key={i} className="flex flex-row items-center gap-4 py-4 border-b border-[#DEDDCE]">
-                <span className="font-geist font-semibold text-[18px] text-text-default flex-shrink-0 w-[40px]">
-                  {entry.year}
-                </span>
-                <div className="flex-1 flex flex-col min-w-0">
-                  {entry.lines.map((line, j) => {
-                    const cls =
-                      line.style === "bold"
-                        ? "font-geist font-semibold text-[18px] text-text-default"
-                        : line.style === "serif"
-                        ? "font-fenix text-[18px] text-text-default"
-                        : "font-geist font-light text-[18px] text-text-default";
-                    return <span key={j} className={cls}>{line.text}</span>;
-                  })}
+          <div className="mt-6 -mx-2 flex flex-col">
+            {timeline.map((entry, i) => {
+              const isTeacherOrMasters = entry.lines[0].text === "Teacher" || entry.lines[0].text === "Master's Degree in";
+              return (
+                <div key={i} className="flex flex-row items-center gap-6 py-4 border-b border-[#DEDDCE]" style={{ minHeight: "112px" }}>
+                  <div className={`flex gap-6 flex-1 ${isTeacherOrMasters ? "items-center" : "items-start"}`}>
+                    <span className="font-geist font-medium text-[18px] text-text-default flex-shrink-0 w-[40px]">
+                      {entry.year}
+                    </span>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      {entry.lines.map((line, j) => {
+                        const cls =
+                          line.style === "bold"
+                            ? "font-geist font-semibold text-[18px] text-text-default"
+                            : line.style === "serif"
+                            ? "font-fenix text-[18px] text-text-default"
+                            : "font-geist font-light text-[18px] text-text-default";
+                        return <span key={j} className={cls}>{line.text}</span>;
+                      })}
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 w-[72px] flex items-center justify-end">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={entry.logo.src}
+                      alt={entry.logo.alt}
+                      className={
+                        ["ESPM São Paulo", "Olist", "IED São Paulo", "Kyvo", "iFood", "Livework"].includes(entry.logo.alt)
+                          ? "w-[68px] h-auto"
+                          : ["Klauvi", "Aprender Design", "Hash", "Unifei", "Itaú"].includes(entry.logo.alt)
+                          ? "max-h-[48px] max-w-full object-contain"
+                          : entry.logo.alt === "Mercado Livre"
+                          ? "max-h-[40px] max-w-full object-contain"
+                          : "max-h-[36px] max-w-full object-contain"
+                      }
+                    />
+                  </div>
                 </div>
-                <div className="flex-shrink-0 w-[72px] flex items-center justify-end">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={entry.logo.src} alt={entry.logo.alt} className="max-h-[36px] max-w-full object-contain" />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -148,6 +180,19 @@ export default function Track() {
 
         </div>
       </div>
+
+      {/* ── Control bar — mobile only ───────────────────────────────── */}
+      {controlBarVisible && (
+        <div className="control-bar-enter md:hidden fixed bottom-0 left-0 right-0 z-30 px-10 flex justify-end" style={{ paddingBottom: "73px" }}>
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="h-[56px] px-5 rounded-full flex items-center gap-2 font-fenix text-[18px] text-text-default cursor-pointer"
+            style={{ backgroundColor: "#F6F3E6", border: "1px solid #D0D1B3", boxShadow: "0px 4px 12px -8px rgba(0,0,0,0.25)" }}
+          >
+            Back to top <ArrowUp size={18} />
+          </button>
+        </div>
+      )}
 
       {/* ── Desktop layout ──────────────────────────────────────────── */}
     <div className="hidden md:block bg-bg-base h-dvh overflow-hidden relative">
