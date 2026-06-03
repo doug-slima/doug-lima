@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { ArrowUp } from "@phosphor-icons/react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
+import Monogram from "../components/Monogram";
+import BackToTopButton from "../components/BackToTopButton";
+import ControlPill from "../components/ControlPill";
 import ScrollColumn from "../components/ScrollColumn";
 import TimelineBlock, { TimelineEntry } from "../components/TimelineBlock";
+import TimelineItem from "../components/TimelineItem";
 import { useSplitLayout } from "../hooks/useSplitLayout";
 
 const timeline: TimelineEntry[] = [
@@ -67,10 +70,7 @@ const timeline: TimelineEntry[] = [
   },
   {
     year: "2017",
-    lines: [
-      { text: "Service Designer", style: "bold" },
-      { text: "Livework", style: "serif" },
-    ],
+    lines: [{ text: "Service Designer", style: "bold" }, { text: "Livework", style: "serif" }],
     logo: { src: "/assets/companies-page-track/livework-logo.png", alt: "Livework" },
   },
   {
@@ -95,18 +95,14 @@ const timeline: TimelineEntry[] = [
 ];
 
 export default function Track() {
-  const [controlBarVisible, setControlBarVisible] = useState(false);
-  const timelineRef = useRef<HTMLParagraphElement>(null);
+  const [atBottom, setAtBottom] = useState(false);
 
   useEffect(() => {
-    const el = timelineRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setControlBarVisible(!entry.isIntersecting),
-      { rootMargin: "-144px 0px 0px 0px", threshold: 0 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    const onScroll = () => {
+      setAtBottom(window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 10);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const { refs, state, scrollToTop } = useSplitLayout();
@@ -123,157 +119,88 @@ export default function Track() {
 
         <div className="px-10 pt-[144px] pb-10 flex flex-col">
 
-          <div className="mt-0">
-            <p className="font-geist font-light text-[28px] leading-tight text-text-default">
-              20 years across<br />
-              Design, Experiences<br />
-              and Technology.
-            </p>
-          </div>
+          <p className="font-geist font-light text-[28px] leading-tight text-text-default">
+            20 years across<br />
+            Design, Experiences<br />
+            and Technology.
+          </p>
 
-          <p ref={timelineRef} className="mt-8 font-fenix text-[20px] text-text-default">a few steps:</p>
+          <p className="mt-8 font-fenix text-[20px] text-text-default">a few steps:</p>
 
           <div className="mt-6 -mx-2 flex flex-col">
-            {timeline.map((entry, i) => {
-              const isTeacherOrMasters = entry.lines[0].text === "Teacher" || entry.lines[0].text === "Master's Degree in";
-              return (
-                <div key={i} className="flex flex-row items-center gap-6 py-4 border-b border-[#DEDDCE]" style={{ minHeight: "112px" }}>
-                  <div className={`flex gap-6 flex-1 ${isTeacherOrMasters ? "items-center" : "items-start"}`}>
-                    <span className="font-geist font-medium text-[18px] text-text-default flex-shrink-0 w-[40px]">
-                      {entry.year}
-                    </span>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      {entry.lines.map((line, j) => {
-                        const cls =
-                          line.style === "bold"
-                            ? "font-geist font-semibold text-[18px] text-text-default"
-                            : line.style === "serif"
-                            ? "font-fenix text-[18px] text-text-default"
-                            : "font-geist font-light text-[18px] text-text-default";
-                        return <span key={j} className={cls}>{line.text}</span>;
-                      })}
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0 w-[72px] flex items-center justify-end">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={entry.logo.src}
-                      alt={entry.logo.alt}
-                      className={
-                        ["ESPM São Paulo", "Olist", "IED São Paulo", "Kyvo", "iFood", "Livework"].includes(entry.logo.alt)
-                          ? "w-[68px] h-auto"
-                          : ["Klauvi", "Aprender Design", "Hash", "Unifei", "Itaú"].includes(entry.logo.alt)
-                          ? "max-h-[48px] max-w-full object-contain"
-                          : entry.logo.alt === "Mercado Livre"
-                          ? "max-h-[40px] max-w-full object-contain"
-                          : "max-h-[36px] max-w-full object-contain"
-                      }
-                    />
-                  </div>
-                </div>
-              );
-            })}
+            {timeline.map((entry, i) => (
+              <TimelineItem key={i} entry={entry} />
+            ))}
           </div>
 
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/home/dl-monogram.svg" alt="" aria-hidden="true" className="w-[104px] mt-12" />
+          <Monogram size="lg" className="mt-12" />
 
         </div>
       </div>
 
-      {/* ── Control bar — mobile only ───────────────────────────────── */}
-      {controlBarVisible && (
-        <div className="control-bar-enter md:hidden fixed bottom-0 left-0 right-0 z-30 px-10 flex justify-end" style={{ paddingBottom: "73px" }}>
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="h-[56px] px-5 rounded-full flex items-center gap-2 font-fenix text-[18px] text-text-default cursor-pointer"
-            style={{ backgroundColor: "#F6F3E6", border: "1px solid #D0D1B3", boxShadow: "0px 4px 12px -8px rgba(0,0,0,0.25)" }}
-          >
-            Back to top <ArrowUp size={18} />
-          </button>
-        </div>
-      )}
+      {/* ── Back to top — mobile only ───────────────────────────────── */}
+      {atBottom && <BackToTopButton paddingBottom={73} />}
 
       {/* ── Desktop layout ──────────────────────────────────────────── */}
-    <div className="hidden md:block bg-bg-base h-dvh overflow-hidden relative">
+      <div className="hidden md:block bg-bg-base h-dvh overflow-hidden relative">
 
-      <ScrollColumn
-        ref={rightColRef}
-        className="absolute inset-y-0 right-0 z-0"
-        style={{ left: `${rightColLeft}px` }}
-      >
-        <div
-          className="flex flex-col gap-[344px] pr-[10.5rem]"
-          style={{ paddingTop: `${paddingTop}px`, paddingBottom: `${paddingBottom}px` }}
+        <ScrollColumn
+          ref={rightColRef}
+          className="absolute inset-y-0 right-0 z-0"
+          style={{ left: `${rightColLeft}px` }}
         >
-          {timeline.map((entry, i) =>
-            i === 0 ? (
-              <div key={0} ref={firstItemRef}>
-                <TimelineBlock {...entry} />
-              </div>
-            ) : i === timeline.length - 1 ? (
-              <div key={i} ref={lastItemRef}>
-                <TimelineBlock {...entry} />
-              </div>
-            ) : (
-              <TimelineBlock key={i} {...entry} />
-            )
-          )}
-        </div>
-      </ScrollColumn>
-
-      {/*
-        Header + left column — normal flow, z-10 above the right column.
-        pointer-events-none on the wrapper so the right column remains scrollable
-        through the transparent area; interactive children restore pointer events.
-      */}
-      <div className="pointer-events-none relative z-10 px-[10.5rem] pt-20 pb-20 h-full flex flex-col">
-
-        <div className="pointer-events-auto">
-          <Header />
-        </div>
-
-        <div ref={leftContentRef} className="pointer-events-auto flex-1 min-h-0 w-fit flex flex-col justify-between">
-
-          {/* Top — bio */}
-          <div className="mt-8">
-            <p className="font-geist font-light text-[40px] leading-tight text-text-default whitespace-nowrap">
-              20 years across<br />
-              Design, Experiences<br />
-              and Technology.
-            </p>
-          </div>
-
-          {/* Bottom — monogram */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/home/dl-monogram.svg" alt="" aria-hidden="true" className="w-[88px]" />
-
-        </div>
-
-        {/* "a few steps:" — pixel-perfect at 50vh, aligned with first and last timeline blocks */}
-        <p className="absolute left-[10.5rem] top-1/2 -translate-y-1/2 font-fenix text-[24px] text-text-default">
-          a few steps:
-        </p>
-
-      </div>
-
-      {/* Swipe / Back-to-top — bottom right, centro alinhado com centro do monograma */}
-      <div className="absolute bottom-[104px] right-[88px] z-20 pointer-events-auto">
-        {atEnd ? (
-          <button
-            onClick={scrollToTop}
-            className="h-[56px] pl-6 pr-5 gap-2 rounded-full bg-[#A6AA74]/20 hover:bg-[#F6F3E6] hover:ring-1 hover:ring-[#DEDDCE] font-fenix text-[20px] text-[#3B4028] cursor-pointer flex items-center border-0 transition-all"
+          <div
+            className="flex flex-col gap-[344px] pr-[10.5rem]"
+            style={{ paddingTop: `${paddingTop}px`, paddingBottom: `${paddingBottom}px` }}
           >
-            back to top <ArrowUp size={20} />
-          </button>
-        ) : (
-          <div className="h-[56px] px-6 rounded-full bg-[#A6AA74]/20 font-fenix text-[20px] text-[#3B4028] cursor-default flex items-center">
-            swipe-up to see more
+            {timeline.map((entry, i) =>
+              i === 0 ? (
+                <div key={0} ref={firstItemRef}>
+                  <TimelineBlock {...entry} />
+                </div>
+              ) : i === timeline.length - 1 ? (
+                <div key={i} ref={lastItemRef}>
+                  <TimelineBlock {...entry} />
+                </div>
+              ) : (
+                <TimelineBlock key={i} {...entry} />
+              )
+            )}
           </div>
-        )}
-      </div>
+        </ScrollColumn>
 
-    </div>
+        <div className="pointer-events-none relative z-10 px-[10.5rem] pt-20 pb-20 h-full flex flex-col">
+
+          <div className="pointer-events-auto">
+            <Header />
+          </div>
+
+          <div ref={leftContentRef} className="pointer-events-auto flex-1 min-h-0 w-fit flex flex-col justify-between">
+
+            <div className="mt-8">
+              <p className="font-geist font-light text-[40px] leading-tight text-text-default whitespace-nowrap">
+                20 years across<br />
+                Design, Experiences<br />
+                and Technology.
+              </p>
+            </div>
+
+            <Monogram size="sm" />
+
+          </div>
+
+          <p className="absolute left-[10.5rem] top-1/2 -translate-y-1/2 font-fenix text-[24px] text-text-default">
+            a few steps:
+          </p>
+
+        </div>
+
+        {/* Swipe / Back-to-top */}
+        <div className="absolute bottom-[104px] right-[88px] z-20 pointer-events-auto">
+          <ControlPill atEnd={atEnd} onScrollToTop={scrollToTop} />
+        </div>
+
+      </div>
 
     </>
   );

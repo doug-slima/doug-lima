@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "./Header";
+import Monogram from "./Monogram";
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -42,13 +43,7 @@ export default function PageLayout({
         {children}
         {footerContent !== undefined && (
           <footer className="mt-auto flex items-end md:items-center justify-between">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/assets/home/dl-monogram.svg"
-              alt=""
-              aria-hidden="true"
-              className="w-[104px] h-[104px] md:w-[88px] md:h-auto"
-            />
+            <Monogram size="lg" className="h-[104px] md:w-[88px] md:h-auto" />
             {footerContent}
           </footer>
         )}
