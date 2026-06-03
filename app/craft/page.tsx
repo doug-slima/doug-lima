@@ -13,6 +13,7 @@ import ProjectCarousel from "./ProjectCarousel";
 import ProjectSelector from "./ProjectSelector";
 import SectionDropdown from "./SectionDropdown";
 import PrevNextBar from "./PrevNextBar";
+import PasswordGate from "./PasswordGate";
 import { verifyPassword } from "./actions";
 
 export default function Craft() {
@@ -169,40 +170,14 @@ export default function Craft() {
 
           </div>
 
-          {/* Password gate — mobile */}
           {showPasswordGate && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center px-6"
-              style={{ backgroundColor: "rgba(243, 242, 230, 0.25)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
-            >
-              <div className="flex flex-col items-center w-full">
-                <h2 className="text-center" style={{ fontFamily: "var(--font-fenix-var)", fontSize: "24px", color: "#5F6A50" }}>
-                  This section is protected by NDA
-                </h2>
-                <p className="text-center mt-2" style={{ fontFamily: "var(--font-fenix-var)", fontSize: "20px", color: "#5F6A50" }}>
-                  please enter the password below:
-                </p>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                  className="mt-4 w-full text-center rounded-lg border px-4 py-3 focus:ring-0 focus:outline-none"
-                  style={{ backgroundColor: "#F0EEE5", borderColor: "#A6AA74", color: "#5F6A50", outline: "none", maxWidth: "280px" }}
-                  autoFocus
-                />
-                {authError && (
-                  <p className="mt-2 font-geist font-light text-[14px] text-text-muted">wrong password</p>
-                )}
-                <button
-                  onClick={() => handleSectionChange("playground")}
-                  className="mt-4 underline"
-                  style={{ fontFamily: "var(--font-fenix-var)", fontSize: "20px", color: "#5F6A50" }}
-                >
-                  cancel
-                </button>
-              </div>
-            </div>
+            <PasswordGate
+              value={password}
+              onChange={setPassword}
+              onSubmit={handleSubmit}
+              onCancel={() => handleSectionChange("playground")}
+              error={authError}
+            />
           )}
 
         </div>{/* /card */}
@@ -280,38 +255,13 @@ export default function Craft() {
         </div>
 
         {showPasswordGate && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ backgroundColor: "rgba(243, 242, 230, 0.25)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
-          >
-            <div className="flex flex-col items-center">
-              <h2 className="text-center" style={{ fontFamily: "var(--font-fenix-var)", fontSize: "32px", color: "#5F6A50" }}>
-                This section is protected by NDA
-              </h2>
-              <p className="text-center mt-2" style={{ fontFamily: "var(--font-fenix-var)", fontSize: "24px", color: "#5F6A50" }}>
-                please enter the password below:
-              </p>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                className="mt-4 w-[200px] text-center rounded-lg border px-4 py-3 focus:ring-0 focus:outline-none"
-                style={{ backgroundColor: "#F0EEE5", borderColor: "#A6AA74", color: "#5F6A50", outline: "none" }}
-                autoFocus
-              />
-              {authError && (
-                <p className="mt-2 font-geist font-light text-[14px] text-text-muted">wrong password</p>
-              )}
-              <button
-                onClick={() => handleSectionChange("playground")}
-                className="mt-4 underline"
-                style={{ fontFamily: "var(--font-fenix-var)", fontSize: "24px", color: "#5F6A50" }}
-              >
-                cancel
-              </button>
-            </div>
-          </div>
+          <PasswordGate
+            value={password}
+            onChange={setPassword}
+            onSubmit={handleSubmit}
+            onCancel={() => handleSectionChange("playground")}
+            error={authError}
+          />
         )}
 
       </div>
