@@ -1,7 +1,7 @@
 # SESSION HANDOFF — douglima.work Portfolio
 
 > Documento de contexto para continuidade entre sessões.
-> Última atualização: 02 jun 2026 — Sessão 9 (mobile polish: Header unificado, control bar craft, carousel, mosaic) ✅
+> Última atualização: 03 jun 2026 — Sessão 11 (extração de componentes, design system, a11y, PasswordGate) ✅
 
 ---
 
@@ -234,6 +234,76 @@ O `Header` é **um componente único** para todas as páginas. Internamente rend
 
 **REGRA:** Não adicionar wrappers nem lógica de header fora do próprio `Header.tsx`. O componente é auto-suficiente.
 
+### 7.12 `app/components/Monogram.tsx` (novo — sessão 11)
+
+Componente do monograma decorativo `dl-monogram.svg`.
+
+**Props:**
+```ts
+size?: "sm" | "lg"   // default: "lg". sm = w-[88px] (desktop), lg = w-[104px] (mobile)
+className?: string
+```
+
+`aria-hidden="true"` — puramente decorativo, sem texto alt.
+
+Usado em: `PageLayout` (home, via `className="h-[104px] md:w-[88px] md:h-auto"`), `craft/page.tsx` (mobile `size="lg"`, desktop `size="sm"`), `track/page.tsx` (mobile e desktop).
+
+### 7.13 `app/components/BackToTopButton.tsx` (novo — sessão 11)
+
+Botão "Back to top" fixo no rodapé. **Mobile only** (`md:hidden`).
+
+**Props:** `paddingBottom: number`, `zIndex?: number` (default 30).
+
+Container com `pointer-events: none` + botão com `pointer-events: auto` — padrão para não bloquear elementos abaixo. Spring animation `control-bar-enter` na entrada.
+
+| Página | paddingBottom | Alinhamento |
+|---|---|---|
+| `/craft` | 169px | Centro do monograma após salto do card (104px) |
+| `/track` | 73px | Centro do monograma no rodapé |
+
+### 7.14 `app/components/ControlPill.tsx` (novo — sessão 11)
+
+Tag swipe/back-to-top do **desktop**. Encapsula o padrão descrito na seção 8.
+
+**Props:** `atEnd: boolean`, `onScrollToTop: () => void`.
+
+- `atEnd=false`: exibe "swipe-up to see more" (decorativo, `cursor-default`)
+- `atEnd=true`: exibe botão clicável "back to top" com hover state
+
+Usado em `/craft` e `/track` na posição `absolute bottom-[104px] right-[88px] z-20 pointer-events-auto`.
+
+### 7.15 `app/craft/SectionDropdown.tsx` (novo — sessão 11)
+
+Dropdown de seleção de seção (Playground / Selected Works). **Mobile only.**
+
+Estado interno: `isOpen`, `containerRef`, `triggerRef`. Fecha ao clicar fora. `close()` retorna foco ao trigger (a11y).
+
+A11y: `aria-expanded`, `aria-haspopup="listbox"`, `role="listbox"`, `role="option"`.
+
+### 7.16 `app/craft/PrevNextBar.tsx` (novo — sessão 11)
+
+Bar fixa no rodapé de navegação entre projetos. **Mobile only** (`md:hidden`).
+
+`z-[20]` — atrás do card (`z-30`). Sempre presente no DOM, revelada visualmente quando o card faz `translateY(-104px)`.
+
+Padding: `pt-[24px] pb-[calc(24px + env(safe-area-inset-bottom))]` — safe area para iOS.
+
+### 7.17 `app/components/TimelineItem.tsx` (novo — sessão 11)
+
+Row individual da timeline mobile (`/track`). Encapsula:
+- Logo sizing logic (3-way conditional por nome da empresa — herdado de `TimelineBlock`)
+- Alinhamento do ano: `items-start` padrão, `items-center` para Teacher / Master's Degree
+
+### 7.18 `app/craft/PasswordGate.tsx` (reescrito — sessão 11)
+
+**Hierarquia interna:** `PasswordGate` > `PasswordDisplay` > `PasswordInput`
+
+- **`PasswordGate`:** overlay `fixed inset-0 z-50`, backdrop blur 16px + `WebkitBackdropFilter` (Safari), `backgroundColor: "rgba(243, 242, 230, 0.25)"`
+- **`PasswordDisplay`:** heading `clamp(24px, 4vw, 32px)`, body `clamp(20px, 3vw, 24px)`, input, erro, botão cancel com fonte Fenix
+- **`PasswordInput`:** `type="password"`, `autoFocus`, `aria-label="NDA password"`, Enter submete
+
+Pressionar Escape no `craft/page.tsx` fecha o gate via `keydown` listener. Backdrop blur requer conteúdo por trás — garantido pela transparência do `backgroundColor`.
+
 ---
 
 ## 8. Padrão Split Layout (track + craft)
@@ -310,7 +380,7 @@ O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé
 ## 9. Página: Home (`/`)
 
 - 100vh, sem scroll
-- Tagline: "Curious Designer" — Geist Light 40pt
+- Tagline: "Curious Designer" — Geist Light **28pt mobile / 40pt desktop**, no fluxo normal do conteúdo (não absoluto). Mobile: posição logo abaixo da header (`pt-[144px]`), sem centering vertical.
 - Mosaico animado: `mosaic-home-bg.png`, `w-[1272px]`, alinhado à direita
 - BlurOverlay absolute sobre o mosaico (z-10)
 
@@ -333,30 +403,85 @@ O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé
 - **"a few steps:":** `font-fenix text-[24px]` — mesmo tamanho dos seletores verticais da /craft.
 - *(tag swipe/back reposicionada — ver seção 8)*
 
+### Mobile layout
+
+- Container: `px-10 pt-[144px] pb-10 flex flex-col`
+- Timeline: `-mx-2` (32px lateral padding), `gap-6` (24px entre ano e título)
+- Item row: `items-center`, `minHeight: "112px"` via inline style
+- **Alinhamento do ano:** para itens com cargos simples (não-Teacher, não-Master's Degree): `items-start` no sub-container ano+texto (topo do ano alinha com topo do título). Teacher e Master's Degree: `items-center` (permanecem centralizados).
+- **Tamanhos de logo:** `w-[68px] h-auto` para ESPM, Olist, IED, Kyvo, iFood, Livework (largura fixa no iFood como referência); `max-h-[40px]` para Mercado Livre; `max-h-[48px]` para Klauvi, Aprender Design, Hash, Unifei, Itaú; `max-h-[36px]` padrão para os demais.
+- **Back to top (mobile):** componente `BackToTopButton` com `paddingBottom={73}`. Aparece via **scroll listener** (`window.scrollY + innerHeight >= scrollHeight - 10`), estado `atBottom`. Mesmo spring animation (`control-bar-enter`). `timelineRef` e `IntersectionObserver` foram removidos na sessão 11.
+
 ---
 
 ## 11. Página: Craft (`/craft`)
 
-*(estrutura inalterada — tag swipe/back reposicionada, ProjectSelector usa NavSelector underline, ver seções 7 e 8)*
+*(estrutura desktop inalterada — tag swipe/back reposicionada, ProjectSelector usa NavSelector underline, ver seções 7 e 8)*
 
 ### Password Gate (Selected Works) ✅ IMPLEMENTADO
 
 *(inalterado — ver sessão 5)*
 
+### Mobile layout (atualizado sessão 10)
+
+**Estrutura geral:**
+```
+outer div (bg #313621, sem padding extra)
+  └── card div (bg-base, rounded-b-[24px], zIndex: 30, translateY spring)
+        └── Header (fixed, z-40)
+        └── content (px-10 pt-[156px] pb-8)
+              └── dropdown seção
+              └── pills seletores (ref={pillsRef})
+              └── info block (h: 120px)
+              └── imagens (gap-3, -mx-7 → 12px lateral)
+              └── monograma (w-104px, mt-8, pb-8)
+footer div (bg #313621, fixed bottom-0, z-[20])  ← ATRÁS do card
+  └── pill Prev/Next (mx-10, h-[56px], bg #121210, shadow)
+```
+
+**Comportamento do card:**
+- Card tem `zIndex: 30` — cobre o footer (z-[20]) enquanto o usuário scrola
+- Scroll listener detecta `scrollY + innerHeight >= scrollHeight - 10`
+- Quando atingido: `translateY(-104px)` com `cubic-bezier(0.34, 1.56, 0.64, 1)` — "pulinho" revela o footer
+- Ao rolar de volta: card retorna à posição original
+
+**Footer Prev/Next:**
+- `fixed bottom-0`, `bg-[#313621]`, `z-[20]` (atrás do card)
+- Padding: `pt-[24px] pb-[24px]`
+- Pill: `mx-10 h-[56px] rounded-full bg-[#121210]`, `boxShadow: "0px 16px 48px -8px rgba(12,12,13,0.50)"`
+- Texto/ícone: `#FAFAF5`
+- Sempre visível (não precisa de scroll trigger)
+
+**Back to top:**
+- Componente `BackToTopButton` com `paddingBottom={169}` e `zIndex={40}`
+- `paddingBottom: "169px"` — alinha centro vertical com o monograma após o salto do card
+- Cálculo: `pb-8 (32px) + monograma_center (61px) + card_jump (104px) - button_half (28px) = 169px`
+- Aparece quando `footerRevealed = true` — **mesmo scroll listener** que aciona o salto do card. `pillsRef` e `IntersectionObserver` foram removidos na sessão 11.
+- Spring animation: `control-bar-enter`
+
+**Info block:**
+- Container: `h: 120px` via inline style
+- Logo: `h-[56px] w-auto` (altura fixa 56px, largura proporcional — garante consistência visual independente da proporção do asset)
+
+**Carousel de imagens:**
+- Lateral padding: 12px (`-mx-7` dentro de `px-10`)
+- Gap entre imagens: 12px (`gap-3`)
+
 ---
 
-## 12. Pendências finais (Sessão 8 — próxima)
+## 12. Pendências finais
 
 - [x] **Responsivo mobile — Home, Track, Craft** ← feito na sessão 8
 - [x] **Mobile polish — Header unificado, control bar craft, carousel, mosaic** ← feito na sessão 9
+- [x] **Mobile polish — Track timeline, craft footer reveal, home tagline** ← feito na sessão 10
 - [x] **Deploy publicado** ← sessão 9 — `douglima.work` no ar
+- [x] **Extração de componentes, design system, a11y, PasswordGate** ← feito na sessão 11
+- [ ] **Pass de consistência desktop** ← próxima sessão — revisar desktop contra padrões mobile e DS/DX da sessão 11
 - [ ] **Selected Works — dados reais** — Doug exporta assets, Claude Code popula `data.ts`
 - [ ] **Variável `NDA_PASSWORD` na Vercel** — adicionar no painel antes do deploy (`dvault`)
 - [ ] Meta tags (og:image, description, favicon)
 - [ ] Transições entre páginas
 - [ ] Cloudflare Email Routing (`hello@douglima.work` → Gmail)
-- [ ] Deletar `app/craft/PasswordGate.tsx` (legado, não usado)
-- [ ] **Track mobile** — validar control bar (se necessário, replicar padrão da craft)
 
 ---
 
@@ -370,7 +495,7 @@ O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé
 
 ---
 
-## 14. Arquivos do projeto (atualizado — sessão 9)
+## 14. Arquivos do projeto (atualizado — sessão 11)
 
 ```
 doug-lima/
@@ -380,26 +505,34 @@ doug-lima/
 │   │   ├── Header.tsx                # Logo + nav — mobile: fixed+gradiente; desktop: in-flow
 │   │   ├── MosaicBackground.tsx      # Mosaico animado — inline styles críticos, .mosaic-container no CSS
 │   │   ├── NavSelector.tsx           # Seletor reutilizável: variant pill|underline, direction row|col
-│   │   ├── PageLayout.tsx            # Layout padrão: pt-[144px] mobile / pt-20 desktop
+│   │   ├── PageLayout.tsx            # Layout padrão: usa Monogram, pt-[144px] mobile / pt-20 desktop
 │   │   ├── BlurOverlay.tsx           # Gradiente fade 185px (desktop scroll columns)
 │   │   ├── ScrollColumn.tsx          # overflow-y-auto + BlurOverlay embutido
-│   │   └── TimelineBlock.tsx         # Bloco da timeline (ano | texto | logo)
+│   │   ├── TimelineBlock.tsx         # Bloco da timeline desktop (ano | texto | logo)
+│   │   ├── TimelineItem.tsx          # Row da timeline mobile — logo sizing + alinhamento encapsulados
+│   │   ├── Monogram.tsx              # Monograma DL svg — size sm (88px) / lg (104px), aria-hidden
+│   │   ├── BackToTopButton.tsx       # Botão back to top mobile — pointer-events pass-through, spring anim
+│   │   └── ControlPill.tsx           # Tag swipe/back-to-top desktop — atEnd toggle
 │   ├── hooks/
 │   │   └── useSplitLayout.ts         # Hook split layout — IntersectionObserver p/ atEnd
 │   ├── track/
-│   │   └── page.tsx                  # Track completa ✅
+│   │   └── page.tsx                  # Track completa ✅ — usa TimelineItem, BackToTopButton, ControlPill
 │   ├── craft/
 │   │   ├── actions.ts                # Server Action: verifyPassword
 │   │   ├── data.ts                   # Tipos + dados dos projetos
 │   │   ├── ProjectCarousel.tsx       # Coluna direita: info block + image displays
 │   │   ├── ProjectSelector.tsx       # Seletor vertical — usa NavSelector underline
-│   │   ├── PasswordGate.tsx          # LEGADO — não usado, pode deletar
+│   │   ├── SectionDropdown.tsx       # Dropdown mobile Playground/Selected Works — a11y + focus return
+│   │   ├── PrevNextBar.tsx           # Bar Prev/Next mobile — z-20, safe-area-inset-bottom
+│   │   ├── PasswordGate.tsx          # Modal NDA — backdrop blur, PasswordDisplay, PasswordInput
 │   │   └── page.tsx                  # Craft: Playground ✅ / Selected Works gate ✅ / dados PENDENTE
-│   ├── globals.css                   # Cores, fontes, keyframes
+│   ├── globals.css                   # Cores, fontes, keyframes, prefers-reduced-motion
 │   ├── layout.tsx                    # Geist + Fenix, metadata
 │   └── page.tsx                      # Home ✅
 ├── docs/
 │   ├── SESSION-HANDOFF-PORTFOLIO.md  # Este arquivo
+│   ├── DESIGN-SYSTEM.md              # Tokens, inventário de componentes (15), specs, arquitetura mobile/desktop
+│   ├── BEST-PRACTICES.md             # DX, a11y, responsividade, performance, Tailwind v4 pitfalls
 │   ├── PRD-SELECTED-WORKS.md         # Dados + assets para Selected Works
 │   ├── PRD-CRAFT-PASSWORD.md         # PRD do password gate (referência histórica)
 │   ├── PRD-HOME.md
@@ -523,3 +656,71 @@ doug-lima/
 5. **Duas fontes de verdade para o espaçamento do header.**
    - Erro: `pt-10` estava no wrapper (`StickyHeader`) e no container (`PageLayout`), criando dois padrões incompatíveis.
    - Correto: o espaçamento pertence ao `Header` — um componente, uma responsabilidade.
+
+### Sessão 10 — Mobile polish (track timeline, craft footer reveal, home tagline)
+
+#### ✅ O que foi implementado
+
+- **Track timeline mobile:** `TimelineItem` rows com `minHeight: "112px"`, logos com sizing 3-way conditional, alinhamento do ano `items-start` / `items-center` por tipo de entrada.
+- **Craft footer reveal:** card `translateY(-104px)` com spring ao atingir o fim da página. Footer Prev/Next (`z-20`) sempre presente, revelado pelo salto do card (`z-30`).
+- **Home tagline mobile:** `font-geist font-light text-[28px]` no mobile, `text-[40px]` no desktop.
+- **Back to top craft:** `paddingBottom: 169px`, alinhamento calculado com o monograma após o salto do card.
+
+### Sessão 11 — Extração de componentes, design system, a11y, PasswordGate
+
+#### ✅ O que foi implementado
+
+- **6 novos componentes extraídos:** `Monogram`, `BackToTopButton`, `ControlPill`, `SectionDropdown`, `PrevNextBar`, `TimelineItem` (ver seção 7 para specs).
+- **`PasswordGate` reescrito:** hierarquia `PasswordGate > PasswordDisplay > PasswordInput`, com backdrop blur, clamp typography, autoFocus e a11y.
+- **`craft/page.tsx` refatorado:** 427 → ~180 linhas. Toda lógica de componente saiu para os arquivos dedicados.
+- **`track/page.tsx` refatorado:** 278 → ~175 linhas. `timelineRef`, `useRef`, `ArrowUp` removidos.
+- **Trigger Back to top unificado:** de IntersectionObserver nas pills → scroll listener `window.scrollY + innerHeight >= scrollHeight - 10`. Estado único `footerRevealed` / `atBottom` controla tanto o salto do card (craft) quanto o BackToTopButton.
+- **Logo anchor por altura:** `h-[56px] w-auto` no info block do craft mobile — altura fixa independente da proporção do asset.
+- **`prefers-reduced-motion`:** `globals.css` desativa `control-bar-enter` e todas as transitions/animations (`0.01ms !important`).
+- **`env(safe-area-inset-bottom)`:** aplicado via `calc()` em `PrevNextBar` e `BackToTopButton`.
+- **Focus return no SectionDropdown:** `triggerRef.current?.focus()` no `close()`.
+- **`docs/DESIGN-SYSTEM.md`:** tokens, inventário de 15 componentes, specs, arquitetura mobile/desktop, princípios de qualidade.
+- **`docs/BEST-PRACTICES.md`:** DX, design system, a11y, responsividade, performance, Tailwind v4 pitfalls, git workflow.
+
+#### ❌ Erros cometidos — NÃO repetir
+
+1. **`Write` sem `Read` prévio causa erro "File has not been read yet."**
+   - Regra: sempre usar `Read` antes de `Write`. Para modificações pontuais, preferir `Edit` (não requer Read prévio).
+
+2. **Diagnóstico incompleto de pointer events.**
+   - Erro: ao investigar Prev/Next não clicáveis, primeiro tentei corrigir o handler sem examinar o DOM. O problema era o container do `BackToTopButton` (`pointer-events: auto`, full-width, 225px de altura) bloqueando eventos.
+   - Correto: investigar a hierarquia de z-index e pointer-events antes de assumir que o bug é no handler.
+
+3. **Importação órfã após refatoração.**
+   - Erro: após remover `timelineRef`, o import `useRef` ficou sem uso em `track/page.tsx`.
+   - Regra: ao remover uso de uma importação, checar e remover o import junto.
+
+---
+
+## 16. Próxima sessão — Pass de consistência desktop
+
+**Objetivo:** revisar todas as páginas desktop contra os padrões mobile e diretrizes de DS/DX estabelecidos na sessão 11.
+
+### O que auditar
+
+| Componente / área | O que verificar |
+|---|---|
+| `Header.tsx` | Focus management, a11y labels nos links de nav |
+| `NavSelector.tsx` | Estados pill: default, hover, active — verificar em ambos breakpoints |
+| `ControlPill.tsx` | Comportamento `atEnd` em /craft e /track, hover state |
+| `PasswordGate.tsx` | Backdrop blur funciona em Safari (WebkitBackdropFilter), foco no input, Escape fecha |
+| `ProjectCarousel.tsx` | Altura logo `h-[56px] w-auto` no desktop (info block) |
+| `ProjectSelector.tsx` | Underline variant, gap={16}, alinhamento vertical com o bio |
+| `Monogram.tsx` | `size="sm"` no desktop (w-[88px]) em craft e track |
+| Section switcher desktop | Dois botões `ArrowRight` em craft — verificar hover/active, cores, tamanhos contra DS |
+| Tokens de cor | Todos os valores hexadecimais inline correspondem aos tokens de `DESIGN-SYSTEM.md` |
+| Tipografia | Tamanhos/pesos Geist e Fenix conforme specs do DS |
+| Espaçamento | `px-[10.5rem]`, `pt-20`, `pb-20` consistentes entre /home, /track, /craft |
+| Animações | `prefers-reduced-motion` respeitado nas transições desktop (card translateY, ControlPill hover) |
+| Focus rings | Todos os elementos interativos têm foco visível no desktop |
+
+### Referências para a sessão
+
+- `docs/DESIGN-SYSTEM.md` — tokens, specs completas de todos os componentes, arquitetura
+- `docs/BEST-PRACTICES.md` — a11y checklist, responsividade, Tailwind v4 pitfalls
+- Seção 8 deste documento — especificações do split layout desktop
