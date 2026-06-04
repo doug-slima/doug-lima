@@ -243,12 +243,12 @@ export default function Craft() {
 
         {/* content-module — full-screen scroll container */}
         <div ref={scrollRef} className="absolute inset-0 overflow-y-auto">
-          <div ref={contentDivRef} className="px-[10.5rem]" style={{ paddingTop: "280px" }}>
+          <div ref={contentDivRef} className="px-[10.5rem]" style={{ paddingTop: "240px" }}>
 
             {!showPasswordGate && (
               <>
                 {/* Info block */}
-                <div className="h-[144px] flex items-center justify-between">
+                <div className="h-[240px] px-[200px] flex items-center justify-between">
                   <div className="flex flex-col">
                     <p className="font-geist font-semibold text-[24px] leading-tight text-text-default">
                       {currentProject.label}
@@ -263,7 +263,7 @@ export default function Craft() {
                       <img
                         src={currentProject.logo}
                         alt={currentProject.name}
-                        className="h-[56px] w-auto object-contain"
+                        className="h-[80px] w-auto object-contain"
                       />
                     ) : (
                       <div className="w-full h-[80px] bg-surface-tag rounded-lg" />

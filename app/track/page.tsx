@@ -141,7 +141,7 @@ export default function Track() {
       <div className="hidden md:block bg-bg-base h-dvh overflow-hidden relative">
 
         {/* BlurOverlay — fades content scrolling under the header */}
-        <BlurOverlay height={280} solidUntil="80%" />
+        <BlurOverlay />
 
         {/* Footer before scroll container in DOM — z-index trick lets content pass over on exit */}
         {isFooterMounted && (
@@ -154,7 +154,10 @@ export default function Track() {
 
         {/* content-module — full-screen scroll container */}
         <div ref={scrollRef} className="absolute inset-0 overflow-y-auto">
-          <div ref={contentDivRef} className="px-[300px]" style={{ paddingTop: "280px" }}>
+          <div ref={contentDivRef} className="px-[300px]" style={{ paddingTop: "160px" }}>
+            <p className="font-geist font-light text-[40px] leading-tight text-text-default mb-[80px]">
+              20 years across Design,<br />Experiences and Technology.
+            </p>
             <div className="flex flex-col">
               {timeline.map((entry, i) => {
                 const isLast = i === timeline.length - 1;
@@ -168,16 +171,10 @@ export default function Track() {
           </div>
         </div>
 
-        {/* Floating header — same pattern as Craft */}
+        {/* Floating header */}
         <div className="pointer-events-none absolute top-0 inset-x-0 z-10 px-[72px] pt-[72px]">
           <div className="pointer-events-auto">
-            <Header
-              menuNav={
-                <p className="font-geist font-light text-[40px] leading-tight text-text-default whitespace-nowrap">
-                  20 years across Design, Experiences and Technology.
-                </p>
-              }
-            />
+            <Header />
           </div>
         </div>
 
