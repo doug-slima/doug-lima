@@ -15,13 +15,15 @@ interface NavSelectorProps {
   direction?: "row" | "col";
   gap?: number;
   className?: string;
+  textSize?: string;
+  pillHeight?: string;
 }
 
-function itemClass(active: boolean, variant: "pill" | "underline") {
+function itemClass(active: boolean, variant: "pill" | "underline", textSize: string, pillHeight: string) {
   if (variant === "pill") {
     return active
-      ? "flex-shrink-0 flex items-center px-4 h-[32px] rounded-full font-fenix text-[20px] md:text-[24px] text-text-active bg-[#C7FF04]"
-      : "flex-shrink-0 flex items-center px-4 h-[32px] rounded-full font-fenix text-[20px] md:text-[24px] text-text-default ring-inset ring-1 ring-[#AFB4A7] hover:text-text-active hover:bg-[#E8E9D9] hover:ring-0 transition-all";
+      ? `flex-shrink-0 flex items-center px-5 ${pillHeight} rounded-full font-fenix ${textSize} text-text-active bg-[#C7FF04]`
+      : `flex-shrink-0 flex items-center px-5 ${pillHeight} rounded-full font-fenix ${textSize} text-text-default ring-inset ring-1 ring-[#AFB4A7] hover:text-text-active hover:bg-[#E8E9D9] hover:ring-0 transition-all`;
   }
   return active
     ? "w-fit font-fenix text-[24px] text-text-active underline decoration-text-active underline-offset-[3px]"
@@ -34,6 +36,8 @@ export default function NavSelector({
   direction = "row",
   gap = 8,
   className = "",
+  textSize = "text-[20px] md:text-[24px]",
+  pillHeight = "h-[32px]",
 }: NavSelectorProps) {
   return (
     <div
@@ -42,14 +46,14 @@ export default function NavSelector({
     >
       {items.map((item) =>
         item.href ? (
-          <Link key={item.label} href={item.href} className={itemClass(item.active, variant)}>
+          <Link key={item.label} href={item.href} className={itemClass(item.active, variant, textSize, pillHeight)}>
             {item.label}
           </Link>
         ) : (
           <button
             key={item.label}
             onClick={item.onClick}
-            className={`${itemClass(item.active, variant)} border-0 py-0 cursor-pointer text-left`}
+            className={`${itemClass(item.active, variant, textSize, pillHeight)} border-0 py-0 cursor-pointer text-left`}
             style={item.active && variant === "pill" ? { backgroundColor: "#C7FF04" } : undefined}
           >
             {item.label}

@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "./Header";
-import Monogram from "./Monogram";
+import PageFooter from "./PageFooter";
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -38,14 +38,11 @@ export default function PageLayout({
   return (
     <div className={`bg-bg-base ${outerClassName}`}>
       {backgroundLayers}
-      <div className={`px-10 md:px-[10.5rem] pt-[144px] md:pt-20 pb-10 md:pb-20 flex flex-col ${contentClassName}`}>
+      <div className={`px-10 md:px-[72px] pt-[144px] md:pt-[72px] pb-10 md:pb-20 flex flex-col ${contentClassName}`}>
         <Header />
         {children}
         {footerContent !== undefined && (
-          <footer className="mt-auto flex items-end md:items-center justify-between">
-            <Monogram size="lg" className="h-[104px] md:w-[88px] md:h-auto" />
-            {footerContent}
-          </footer>
+          <PageFooter variant="static" right={footerContent} />
         )}
       </div>
     </div>

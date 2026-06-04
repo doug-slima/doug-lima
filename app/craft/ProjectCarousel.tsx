@@ -10,6 +10,8 @@ interface Props {
   rightColLeft: number;
   paddingTop: number;
   paddingBottom: number;
+  blurHeight?: number;
+  blurSolidUntil?: string;
 }
 
 export default function ProjectCarousel({
@@ -20,12 +22,16 @@ export default function ProjectCarousel({
   rightColLeft,
   paddingTop,
   paddingBottom,
+  blurHeight,
+  blurSolidUntil,
 }: Props) {
   return (
     <ScrollColumn
       ref={rightColRef}
       className="absolute inset-y-0 right-0 z-0"
       style={{ left: `${rightColLeft}px` }}
+      blurHeight={blurHeight}
+      blurSolidUntil={blurSolidUntil}
     >
       <div
         className="flex flex-col gap-[80px] pr-[10.5rem]"
@@ -47,7 +53,7 @@ export default function ProjectCarousel({
               <img
                 src={project.logo}
                 alt={project.name}
-                className="max-h-full max-w-full object-contain"
+                className="h-[56px] w-auto object-contain"
               />
             ) : (
               <div className="w-full h-[80px] bg-surface-tag rounded-lg" />

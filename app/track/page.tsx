@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef } from "react";
 import Header from "../components/Header";
 import Monogram from "../components/Monogram";
-import BackToTopButton from "../components/BackToTopButton";
-import ControlPill from "../components/ControlPill";
-import ScrollColumn from "../components/ScrollColumn";
+import BlurOverlay from "../components/BlurOverlay";
+import PageFooter, { FooterBackToTop } from "../components/PageFooter";
 import TimelineBlock, { TimelineEntry } from "../components/TimelineBlock";
 import TimelineItem from "../components/TimelineItem";
-import { useSplitLayout } from "../hooks/useSplitLayout";
+import { useFooterAnimation } from "../hooks/useFooterAnimation";
 
 const timeline: TimelineEntry[] = [
   {
@@ -95,19 +94,21 @@ const timeline: TimelineEntry[] = [
 ];
 
 export default function Track() {
-  const [atBottom, setAtBottom] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const lastItemRef = useRef<HTMLDivElement>(null);
+  const contentDivRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const onScroll = () => {
-      setAtBottom(window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 10);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const { isFooterMounted } = useFooterAnimation({
+    scrollRef,
+    lastItemRef,
+    contentDivRef,
+    footerRef,
+  });
 
-  const { refs, state, scrollToTop } = useSplitLayout();
-  const { rightColRef, leftContentRef, firstItemRef, lastItemRef } = refs;
-  const { atEnd, paddingTop, paddingBottom, rightColLeft } = state;
+  function scrollToTop() {
+    scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   return (
     <>
@@ -125,8 +126,6 @@ export default function Track() {
             and Technology.
           </p>
 
-          <p className="mt-8 font-fenix text-[20px] text-text-default">a few steps:</p>
-
           <div className="mt-6 -mx-2 flex flex-col">
             {timeline.map((entry, i) => (
               <TimelineItem key={i} entry={entry} />
@@ -138,66 +137,48 @@ export default function Track() {
         </div>
       </div>
 
-      {/* ── Back to top — mobile only ───────────────────────────────── */}
-      {atBottom && <BackToTopButton paddingBottom={73} />}
-
       {/* ── Desktop layout ──────────────────────────────────────────── */}
       <div className="hidden md:block bg-bg-base h-dvh overflow-hidden relative">
 
-        <ScrollColumn
-          ref={rightColRef}
-          className="absolute inset-y-0 right-0 z-0"
-          style={{ left: `${rightColLeft}px` }}
-        >
-          <div
-            className="flex flex-col gap-[344px] pr-[10.5rem]"
-            style={{ paddingTop: `${paddingTop}px`, paddingBottom: `${paddingBottom}px` }}
-          >
-            {timeline.map((entry, i) =>
-              i === 0 ? (
-                <div key={0} ref={firstItemRef}>
-                  <TimelineBlock {...entry} />
-                </div>
-              ) : i === timeline.length - 1 ? (
-                <div key={i} ref={lastItemRef}>
-                  <TimelineBlock {...entry} />
-                </div>
-              ) : (
-                <TimelineBlock key={i} {...entry} />
-              )
-            )}
-          </div>
-        </ScrollColumn>
+        {/* BlurOverlay — fades content scrolling under the header */}
+        <BlurOverlay height={280} solidUntil="80%" />
 
-        <div className="pointer-events-none relative z-10 px-[10.5rem] pt-20 pb-20 h-full flex flex-col">
+        {/* Footer before scroll container in DOM — z-index trick lets content pass over on exit */}
+        {isFooterMounted && (
+          <PageFooter
+            ref={footerRef}
+            scrollRef={scrollRef}
+            right={<FooterBackToTop onClick={scrollToTop} />}
+          />
+        )}
 
-          <div className="pointer-events-auto">
-            <Header />
-          </div>
-
-          <div ref={leftContentRef} className="pointer-events-auto flex-1 min-h-0 w-fit flex flex-col justify-between">
-
-            <div className="mt-8">
-              <p className="font-geist font-light text-[40px] leading-tight text-text-default whitespace-nowrap">
-                20 years across<br />
-                Design, Experiences<br />
-                and Technology.
-              </p>
+        {/* content-module — full-screen scroll container */}
+        <div ref={scrollRef} className="absolute inset-0 overflow-y-auto">
+          <div ref={contentDivRef} className="px-[300px]" style={{ paddingTop: "280px" }}>
+            <div className="flex flex-col">
+              {timeline.map((entry, i) => {
+                const isLast = i === timeline.length - 1;
+                return (
+                  <div key={i} ref={isLast ? lastItemRef : undefined} className="border-b border-[#DEDDCE] h-[280px] flex flex-col justify-center">
+                    <TimelineBlock {...entry} />
+                  </div>
+                );
+              })}
             </div>
-
-            <Monogram size="sm" />
-
           </div>
-
-          <p className="absolute left-[10.5rem] top-1/2 -translate-y-1/2 font-fenix text-[24px] text-text-default">
-            a few steps:
-          </p>
-
         </div>
 
-        {/* Swipe / Back-to-top */}
-        <div className="absolute bottom-[104px] right-[88px] z-20 pointer-events-auto">
-          <ControlPill atEnd={atEnd} onScrollToTop={scrollToTop} />
+        {/* Floating header — same pattern as Craft */}
+        <div className="pointer-events-none absolute top-0 inset-x-0 z-10 px-[72px] pt-[72px]">
+          <div className="pointer-events-auto">
+            <Header
+              menuNav={
+                <p className="font-geist font-light text-[40px] leading-tight text-text-default whitespace-nowrap">
+                  20 years across Design, Experiences and Technology.
+                </p>
+              }
+            />
+          </div>
         </div>
 
       </div>

@@ -13,34 +13,39 @@ export type TimelineEntry = {
 };
 
 export default function TimelineBlock({ year, lines, logo }: TimelineEntry) {
+  const isTeacherOrMasters =
+    lines[0].text === "Teacher" || lines[0].text === "Master's Degree in";
+
   return (
     <div className="flex flex-row items-center">
-      <span className="font-geist font-semibold text-[24px] text-text-default flex-shrink-0">
-        {year}
-      </span>
 
-      <div className="ml-[24px] flex-shrink-0 w-fit flex flex-col">
-        {lines.map((line, i) => {
-          const cls =
-            line.style === "bold"
-              ? "font-geist font-semibold text-[24px] text-text-default"
-              : line.style === "serif"
-              ? "font-fenix text-[24px] text-text-default"
-              : "font-geist font-light text-[24px] text-text-default";
-          return (
-            <span key={i} className={cls}>
-              {line.text}
-            </span>
-          );
-        })}
+      <div className={`flex flex-row flex-1 ${isTeacherOrMasters ? "items-center" : "items-start"}`}>
+        <span className="font-geist font-semibold text-[24px] text-text-default flex-shrink-0">
+          {year}
+        </span>
+
+        <div className="ml-[24px] flex-shrink-0 w-fit flex flex-col">
+          {lines.map((line, i) => {
+            const cls =
+              line.style === "bold"
+                ? "font-geist font-semibold text-[24px] text-text-default"
+                : line.style === "serif"
+                ? "font-fenix text-[24px] text-text-default"
+                : "font-geist font-light text-[24px] text-text-default";
+            return (
+              <span key={i} className={cls}>
+                {line.text}
+              </span>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="flex-1" />
-
-      <div className="w-[220px] flex-shrink-0">
+      <div className="w-[172px] flex-shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logo.src} alt={logo.alt} className="w-full object-contain" />
       </div>
+
     </div>
   );
 }

@@ -128,7 +128,6 @@ Transformação do card reveal (craft mobile):
 |---|---|---|
 | `ProjectInfoBlock` | craft/page.tsx mobile + ProjectCarousel.tsx | Média |
 | `ImageDisplay` | craft/page.tsx mobile + ProjectCarousel.tsx | Média |
-| `PasswordGate` | craft/page.tsx (mobile e desktop inline) | Baixa |
 | `ContactTag` | page.tsx (desktop pill + mobile overlay) | Baixa |
 
 ---
@@ -363,18 +362,11 @@ Direita:
 
 - **Touch targets:** mínimo 44×44px (WCAG 2.5.5). Todos os botões mobile têm `h-[56px]` ✓
 - **Elementos decorativos:** sempre `alt=""` + `aria-hidden="true"` (monograma, avatar hover) ✓
-- **`aria-expanded`:** aplicar em dropdowns (SectionDropdown) — pendente
-- **`aria-label`:** aplicar em icon-only buttons (ex: botão avatar de contato mobile) — pendente
-- **`prefers-reduced-motion`:** adicionar no globals.css para desabilitar animações de entrada — pendente
-- **Foco ao fechar overlay:** retornar foco ao trigger após fechar dropdown/gate — pendente
-
-```css
-/* Adicionar em globals.css */
-@media (prefers-reduced-motion: reduce) {
-  .control-bar-enter { animation: none; }
-  * { transition-duration: 0.01ms !important; }
-}
-```
+- **`aria-expanded`:** em dropdowns (SectionDropdown) ✓
+- **`aria-label`:** em icon-only inputs — `PasswordInput` tem `aria-label="NDA password"` ✓
+- **`prefers-reduced-motion`:** em globals.css — desativa `control-bar-enter`, `.card-reveal` e todas as transitions/animations ✓
+- **Foco ao fechar overlay:** `SectionDropdown.close()` retorna foco ao trigger via `triggerRef.current?.focus()` ✓
+- **Focus rings:** `:focus-visible { outline: 2px solid #3B4028; outline-offset: 2px }` em globals.css ✓
 
 ### 8.2 Performance
 
@@ -432,7 +424,7 @@ app/
     SectionDropdown.tsx      ← novo
     ProjectCarousel.tsx
     ProjectSelector.tsx
-    PasswordGate.tsx         ← legado, deletar após confirmar
+    PasswordGate.tsx         ← reescrito sessão 11 — ativo
     actions.ts
     data.ts
     page.tsx

@@ -10,7 +10,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
  * Pass [] (default) for static content like /track.
  * Pass [activeProject] for dynamic content like /craft.
  */
-export function useSplitLayout(resetDeps: unknown[] = []) {
+export function useSplitLayout(resetDeps: unknown[] = [], blurHeight: number = 185) {
   const [atEnd, setAtEnd] = useState(false);
   const [paddingTop, setPaddingTop] = useState(0);
   const [paddingBottom, setPaddingBottom] = useState(0);
@@ -29,7 +29,6 @@ export function useSplitLayout(resetDeps: unknown[] = []) {
     if (!leftEl || !firstEl || !lastEl) return;
 
     const half = window.innerHeight / 2;
-    const blurHeight = 185;
 
     setRightColLeft(leftEl.getBoundingClientRect().right + 80);
     setPaddingTop(Math.max(0, half - blurHeight - firstEl.offsetHeight / 2));
@@ -45,13 +44,15 @@ export function useSplitLayout(resetDeps: unknown[] = []) {
     const lastEl = lastItemRef.current;
     if (!container || !lastEl) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => setAtEnd(entry.isIntersecting),
-      { root: container, threshold: 0 }
-    );
+    const onScroll = () => {
+      const containerBottom = container.getBoundingClientRect().bottom;
+      const lastBottom = lastEl.getBoundingClientRect().bottom;
+      setAtEnd(lastBottom <= containerBottom + 4);
+    };
 
-    observer.observe(lastEl);
-    return () => observer.disconnect();
+    container.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => container.removeEventListener("scroll", onScroll);
   }, resetDeps);
 
   const scrollToTop = () => {

@@ -1,7 +1,7 @@
 # SESSION HANDOFF — douglima.work Portfolio
 
 > Documento de contexto para continuidade entre sessões.
-> Última atualização: 03 jun 2026 — Sessão 11 (extração de componentes, design system, a11y, PasswordGate) ✅
+> Última atualização: 03 jun 2026 — Sessão 15 (animação de saída scroll-driven, hook useFooterAnimation, componente PageFooter, refatoração completa da Track, padding lateral padronizado em 72px) ✅
 
 ---
 
@@ -38,7 +38,7 @@ Site mínimo, estático, com personalidade forte e paleta terrosa.
 ```
 /              → Home (IMPLEMENTADA ✅)
 /track         → Bio + timeline de carreira (IMPLEMENTADA ✅)
-/craft         → Playground (✅) + Selected Works password gate (✅) — dados reais PENDENTE
+/craft         → Playground (✅) + Selected Works password gate (✅) + dados reais (✅)
 ```
 
 ---
@@ -97,7 +97,7 @@ Assets do Playground em `public/assets/playground-works/`:
 | `Proxy/` | `proxy-logo.png` | `proxy-1.png` a `proxy-9.png` (última: hug height) |
 | `Purple/` | `purple-logo.png` | `purple-1.png` a `purple-6.png` |
 
-Assets do Selected Works: **PENDENTE** — criar pasta `public/assets/selected-works/` com subpastas por projeto, mesmo padrão do Playground. Doug exporta do Figma, Claude Code popula o `data.ts`.
+Assets do Selected Works: ✅ **Completo** — `public/assets/selected-works/` com subpastas `project-picking-handheld/` (9 imagens + logo) e `project-checkin-desktop/` (11 imagens + logo). `data.ts` populado com os dois projetos.
 
 ---
 
@@ -105,40 +105,59 @@ Assets do Selected Works: **PENDENTE** — criar pasta `public/assets/selected-w
 
 ### 7.1 `app/components/Header.tsx`
 
-Componente reutilizável para todas as páginas.
+Componente reutilizável para todas as páginas. **Atualizado sessão 14.**
 
-- Logo SVG clicável (volta para `/`) com **hover swap**: default → `doug-lima-lettering.svg`, hover → `doug-lima-lettering-hover.svg`. Implementado com `group`/`group-hover`.
-- Nav usa `NavSelector` com `variant="pill"` e `direction="row"`
-- Logo altura fixada em `h-[32px] w-auto`
+**Nomenclatura interna:**
+- `PageNav` (era `LogoAndNav`) — bloco superior: lettering SVG + pills Craft/Track
+- `MenuNav` — bloco secundário opcional, passado via prop `menuNav?: React.ReactNode`
 
-**REGRA:** Não alterar este arquivo sem necessidade clara.
+**Props:**
+```ts
+menuNav?: React.ReactNode  // se passado, renderiza abaixo do PageNav no desktop
+```
+
+**PageNav (desktop):**
+- Lettering: `h-[40px] w-auto` (era 32px), hover swap via `group`/`group-hover`
+- Pills: `NavSelector` com `pillHeight="h-[40px]"`, `gap={12}`, `px-5`
+- Header element: `flex items-center justify-between` (era `items-start`)
+
+**MenuNav (desktop, craft only):**
+- Container: `pt-6 pb-2 flex items-start gap-6`
+- Conteúdo: `SectionDropdownDesktop` + wrapper `h-[56px] flex items-center` com `NavSelector`
+- O wrapper de 56px fixa o alinhamento vertical dos seletores no centro do trigger do dropdown — mesmo quando o dropdown abre e fica mais alto
+
+**Mobile:** inalterado — fixed, `pt-10`, `py-6`, gradiente 24px
+
+**REGRA:** `menuNav` só é usado pela craft. Home e track passam `<Header />` sem props.
 
 ### 7.2 `app/components/NavSelector.tsx`
 
-Componente compartilhado de seletores de navegação. Suporta duas variantes e duas orientações.
+Componente compartilhado de seletores de navegação. **Atualizado sessão 14.**
 
 **Props:**
 ```ts
 items: { label: string; active: boolean; href?: string; onClick?: () => void }[]
-variant?: "pill" | "underline"   // default: "pill"
-direction?: "row" | "col"        // default: "row"
-gap?: number                     // default: 8px
+variant?: "pill" | "underline"                    // default: "pill"
+direction?: "row" | "col"                          // default: "row"
+gap?: number                                       // default: 8px
 className?: string
+textSize?: string                                  // default: "text-[20px] md:text-[24px]"
+pillHeight?: string                                // default: "h-[32px]"
 ```
 
-**Variante `"pill"`** (header):
-- Default: `text-text-default`, sem fundo, sem borda
-- Hover: fundo `#EAFBAB`, ring `#AEE000`, texto `#3B4028`
-- Active: ring `#3B4028`, texto `#3B4028`, sem fundo
-- Altura: 32px, `rounded-full`, `px-4`, `font-fenix text-[24px]`
+**Usos por contexto:**
+| Contexto | textSize | pillHeight | gap |
+|---|---|---|---|
+| Header PageNav (craft/track selectors) | default | `h-[40px]` | 12 |
+| Header MenuNav (project selectors) | `text-[18px]` | default `h-[32px]` | 8 |
+| Mobile craft (project selectors) | default | default | 8 |
 
-**Variante `"underline"`** (craft vertical):
-- Default: `text-text-default`
-- Hover: `text-text-active` + underline
-- Active: `text-text-active` + underline permanente
-- `font-fenix text-[24px]`
+**Variante `"pill"`:**
+- Active: `bg-[#C7FF04]` via inline style (não via classe Tailwind — garante precedência)
+- Inactive hover: `bg-[#E8E9D9]`, ring remove, `text-text-active`
+- `font-fenix`, `rounded-full`, `px-5`
 
-Itens com `href` renderizam como `<Link>`. Itens com `onClick` renderizam como `<button>`.
+**Variante `"underline"`:** `font-fenix text-[24px]`, underline permanente no ativo.
 
 ### 7.3 `app/components/PageLayout.tsx`
 
@@ -153,13 +172,26 @@ Encapsula padrões de layout compartilhados:
 
 ### 7.4 `app/components/BlurOverlay.tsx`
 
-Gradiente de fade `#F9F9F2 → transparente`, altura 185px:
-- Solid zone: 0–120px (cobre header + área de segurança)
-- Fade zone: 120–185px
+Gradiente de fade `#F9F9F2 → transparente`. **Atualizado sessão 14 — altura e gradiente configuráveis.**
+
+**Props:**
+```ts
+className?: string       // default: "absolute top-0 left-0 right-0"
+height?: number          // default: 185
+solidUntil?: string      // default: "65%"
+```
+
+**Valores por página:**
+| Página | height | solidUntil | Motivo |
+|---|---|---|---|
+| track | 185 (default) | "65%" (default) | Header simples (~120px) |
+| craft | 280 | "80%" | Header dois blocos (~208px) |
+
+**Cálculo craft:** header = `pt-[72px]`(72) + PageNav(40) + `pt-6`(24) + dropdown(56) + `pb-2`(8) = **200px**. Blur 280px × 80% = 224px sólido (margem extra). Fade: 224→280px.
 
 ### 7.5 `app/components/ScrollColumn.tsx`
 
-Scroll container com BlurOverlay embutido. Props: `ref`, `className`, `style`, `children`.
+⚠️ **Não mais usado por craft ou track (sessão 15).** Ambas as páginas adotaram o padrão de scroll container direto (`div absolute inset-0 overflow-y-auto`). O arquivo existe mas pode ser deletado futuramente.
 
 ### 7.6 `app/components/TimelineBlock.tsx`
 
@@ -174,27 +206,15 @@ Estilos de linha: `light` | `bold` | `serif`.
 
 ### 7.7 `app/hooks/useSplitLayout.ts`
 
-Hook que encapsula toda a lógica do padrão split layout. Reutilizado por /track e /craft.
-
-```ts
-const { refs, state, scrollToTop } = useSplitLayout(resetDeps?);
-// refs: rightColRef, leftContentRef, firstItemRef, lastItemRef
-// state: atEnd, paddingTop, paddingBottom, rightColLeft
-```
-
-**`atEnd`:** detectado via **IntersectionObserver** no `lastItemRef` dentro do scroll container. `atEnd = true` assim que o último item começa a aparecer no viewport (não quando chega ao fim do scroll). Quando o item sai do viewport (scroll de volta ao topo), `atEnd` volta para `false`.
-
-**`resetDeps`:** quando mudam, reseta scroll + `atEnd` + recria o observer. Track passa `[]`, craft passa `[activeProject]`.
+⚠️ **Não mais usado por craft ou track (sessão 15).** Substituído por `useFooterAnimation` (seção 7.20). O arquivo existe mas pode ser deletado futuramente.
 
 ### 7.8 `app/craft/ProjectCarousel.tsx`
 
-Coluna direita da /craft. Recebe o projeto ativo e os refs do hook. *(inalterado — ver sessão 5)*
+⚠️ **Não mais usado (sessão 15).** A craft adotou o padrão de scroll container direto — o conteúdo é renderizado inline em `craft/page.tsx` sem delegar para `ProjectCarousel`. O arquivo existe mas pode ser deletado futuramente.
 
 ### 7.9 `app/craft/ProjectSelector.tsx`
 
-Seletor vertical em 50vh. Usa `NavSelector` com `variant="underline"`, `direction="col"`, `gap={16}`.
-
-Posição: `absolute left-[10.5rem] top-1/2 -translate-y-1/2`.
+⚠️ **Não mais usado (sessão 14+15).** Os seletores de projeto estão no `MenuNav` do header. O arquivo pode ser deletado futuramente.
 
 ### 7.10 `app/craft/data.ts` e `app/craft/actions.ts`
 
@@ -234,19 +254,46 @@ O `Header` é **um componente único** para todas as páginas. Internamente rend
 
 **REGRA:** Não adicionar wrappers nem lógica de header fora do próprio `Header.tsx`. O componente é auto-suficiente.
 
-### 7.12 `app/components/Monogram.tsx` (novo — sessão 11)
+### 7.11b `app/craft/SectionDropdownDesktop.tsx` (novo — sessão 14)
+
+Dropdown de seleção de seção para o desktop. Baseado no estilo do `PrevNextBar` mobile.
+
+**Estados:**
+| Estado | Surface | Texto trigger | Ícone |
+|---|---|---|---|
+| Default (fechado) | `#121210`, `rounded-full` | `#FAFAF5` | CaretRight |
+| Hover | `#121210`, `rounded-full` | `#C7FF04` | CaretRight |
+| Aberto | `#121210`, `rounded-[28px]` | `#C7FF04` | CaretDown |
+| Hover na opção | trigger volta a `#FAFAF5` | opção em `#C7FF04` | — |
+
+**Trick de largura fixa:** ambas as linhas (trigger + opção alternativa) são **sempre renderizadas** no DOM. A opção alternativa tem `height: 0; overflow: hidden; paddingBottom: 0` quando fechada — ocupa 0px vertical mas sua largura de texto ainda contribui para o `w-fit` do container flex-col. Resultado: o container nunca expande horizontalmente ao abrir.
+
+**Shadow (estado aberto):** `0px 4px 12px -8px rgba(0,0,0,0.25)` — mesmo padrão do botão "Back to top".
+
+**Dimensões:** `h-[56px]` no trigger, `pl-6 pr-6` (24px cada lado), `font-geist font-light text-[18px]`.
+
+**Outside click:** `mousedown` listener no `document`, cancelado quando `!isOpen`.
+
+### 7.12 `app/components/Monogram.tsx` (atualizado — sessão 14)
 
 Componente do monograma decorativo `dl-monogram.svg`.
 
 **Props:**
 ```ts
-size?: "sm" | "lg"   // default: "lg". sm = w-[88px] (desktop), lg = w-[104px] (mobile)
+size?: "sm" | "md" | "lg" | "4xl"   // default: "lg"
 className?: string
 ```
 
-`aria-hidden="true"` — puramente decorativo, sem texto alt.
+| Size | Width | Uso |
+|---|---|---|
+| `sm` | 88px | — |
+| `md` | 100px | — |
+| `lg` | 104px | Mobile (todas as páginas) |
+| `4xl` | 164px | Desktop craft e track (no PageFooter) |
 
-Usado em: `PageLayout` (home, via `className="h-[104px] md:w-[88px] md:h-auto"`), `craft/page.tsx` (mobile `size="lg"`, desktop `size="sm"`), `track/page.tsx` (mobile e desktop).
+`aria-hidden="true"` — puramente decorativo.
+
+**Desktop (craft + track):** renderizado dentro do `PageFooter` com `size="4xl"` e `className="monogram-enter"`. O footer é condicional ao `isFooterMounted` (gerenciado pelo hook `useFooterAnimation`). Animação `monogram-enter`: scale 0.82→1 + opacity 0→1, ease-out expo 0.6s.
 
 ### 7.13 `app/components/BackToTopButton.tsx` (novo — sessão 11)
 
@@ -263,14 +310,7 @@ Container com `pointer-events: none` + botão com `pointer-events: auto` — pad
 
 ### 7.14 `app/components/ControlPill.tsx` (novo — sessão 11)
 
-Tag swipe/back-to-top do **desktop**. Encapsula o padrão descrito na seção 8.
-
-**Props:** `atEnd: boolean`, `onScrollToTop: () => void`.
-
-- `atEnd=false`: exibe "swipe-up to see more" (decorativo, `cursor-default`)
-- `atEnd=true`: exibe botão clicável "back to top" com hover state
-
-Usado em `/craft` e `/track` na posição `absolute bottom-[104px] right-[88px] z-20 pointer-events-auto`.
+⚠️ **Não mais usado (sessão 15).** O botão "Back to top" desktop foi substituído pelo `FooterBackToTop` dentro do `PageFooter`. O arquivo pode ser deletado futuramente.
 
 ### 7.15 `app/craft/SectionDropdown.tsx` (novo — sessão 11)
 
@@ -294,6 +334,61 @@ Row individual da timeline mobile (`/track`). Encapsula:
 - Logo sizing logic (3-way conditional por nome da empresa — herdado de `TimelineBlock`)
 - Alinhamento do ano: `items-start` padrão, `items-center` para Teacher / Master's Degree
 
+### 7.19 `app/components/PageFooter.tsx` (novo — sessão 15)
+
+Footer de página desktop. `forwardRef` — a ref é usada pelo `useFooterAnimation` para medir a altura e aplicar `transform`.
+
+**Props:**
+```ts
+scrollRef: React.RefObject<HTMLDivElement | null>   // para onWheel forwarding
+center?: React.ReactNode                            // slot central — Prev/Next na craft, vazio na track
+right: React.ReactNode                              // slot direito — back to top, contact, etc.
+```
+
+**Layout:** `grid grid-cols-3 items-center px-[72px] py-20`. Esquerda: `<Monogram size="4xl" className="monogram-enter" />`. Centro: `{center}`. Direita: `flex justify-end`.
+
+**`onWheel` forwarding:** o footer captura eventos de scroll e repassa ao scroll container:
+```ts
+onWheel={(e) => {
+  const delta = e.deltaMode === 0 ? e.deltaY : e.deltaMode === 1 ? e.deltaY * 40 : e.deltaY * window.innerHeight;
+  scrollRef.current?.scrollBy({ top: delta });
+}}
+```
+Necessário porque o footer (`pointer-events: auto`, `position: absolute bottom-0`) captura wheel events e sem forwarding o usuário não consegue rolar quando o ponteiro está sobre o footer.
+
+**`absolute bottom-0 left-0 right-0 z-20 bg-bg-base`** — DOM antes do scroll container. Durante a saída, `footerEl.style.zIndex = "auto"` remove a vantagem z-20 e o scroll container (posterior no DOM) pinta por cima.
+
+**Exporta também:** `FooterBackToTop` — botão "back to top" 3 estados:
+- Default: `border border-[#AFB4A7]`, sem fundo
+- Hover: `bg-[#E8E9D9]`, sem borda
+- Active: `bg-[#C7FF04]`, sem borda
+
+### 7.20 `app/hooks/useFooterAnimation.ts` (novo — sessão 15)
+
+Hook que encapsula toda a lógica de entrada e saída do footer desktop.
+
+**Props:**
+```ts
+scrollRef: React.RefObject<HTMLDivElement | null>
+lastItemRef: React.RefObject<HTMLDivElement | null>
+contentDivRef: React.RefObject<HTMLDivElement | null>
+footerRef: React.RefObject<HTMLDivElement | null>
+resetKey?: string   // mudanças resetam scroll + estado — ex.: activeProject na craft
+```
+
+**Retorna:** `{ isFooterMounted, atEnd }`
+
+**Comportamento:**
+- `atEnd`: `lastEl.getBoundingClientRect().bottom <= container.getBoundingClientRect().bottom + 4`
+- `isFooterMounted`: true quando `atEnd` é atingido pela primeira vez (ou após reset)
+- **Antes do primeiro paint:** `useLayoutEffect` posiciona o footer em `translateY(footerHeight)` — footer invisível
+- **Animação de entrada (ENTER):** `setTimeout(0)` → RAF com 600ms; scroll usa `easeOutBack` ("pulinho"); footer usa `easeOutQuint`. Ao terminar: `enterScrollTopRef.current = container.scrollTop`
+- **Animação de saída (EXIT, scroll-driven):** âncora = `enterScrollTopRef` (scrollTop no fim do enter). A cada evento de scroll: `scrolledBack = Math.max(0, enterScrollTopRef - container.scrollTop)`. `newY = Math.min(scrolledBack * 0.6, footerHeight)` — parallax a 60% do scroll. Footer move com `translateY(newY)`. Quando `newY >= footerHeight`: footer desmontado, `isFooterMounted = false`.
+- **z-index durante saída:** `footerEl.style.zIndex = "auto"` — scroll container posterior no DOM pinta por cima do footer
+
+**Por que `enterScrollTopRef` e não `atEnd`:**
+A animação de entrada rola o container `footerHeight` pixels além do threshold `atEnd`. Se a saída fosse anchorada no threshold (`atEnd`), o exit só começaria depois de `footerHeight` pixels de scroll-back — o carousel já estaria cobrindo o footer antes de ele começar a sair. Anchorar no scrollTop do fim do enter faz o exit começar imediatamente ao primeiro pixel de scroll-back.
+
 ### 7.18 `app/craft/PasswordGate.tsx` (reescrito — sessão 11)
 
 **Hierarquia interna:** `PasswordGate` > `PasswordDisplay` > `PasswordInput`
@@ -306,74 +401,67 @@ Pressionar Escape no `craft/page.tsx` fecha o gate via `keydown` listener. Backd
 
 ---
 
-## 8. Padrão Split Layout (track + craft)
+## 8. Padrão Content-Module + Footer (track + craft) — atualizado sessão 15
 
-### Estrutura
+⚠️ **O split layout das sessões anteriores foi completamente substituído.** Craft e track agora usam um único scroll container full-width com floating header e PageFooter animado.
+
+### Estrutura desktop
 
 ```
 <div bg-bg-base h-dvh overflow-hidden relative>
 
-  {/* Coluna direita — scroll interno */}
-  <ScrollColumn ref={rightColRef} absolute inset-y-0 right-0 z-0
-    style={{ left: rightColLeft }}>
-    <div flex-col gap-[Xpx] pr-[10.5rem] style={{ paddingTop, paddingBottom }}>
-      <div ref={firstItemRef}>primeiro item</div>
-      ...
+  {/* 1. BlurOverlay — fades conteúdo que sobe atrás do header */}
+  <BlurOverlay height={280} solidUntil="80%" />
+
+  {/* 2. PageFooter — antes do scroll container no DOM (z-index trick) */}
+  {isFooterMounted && (
+    <PageFooter ref={footerRef} scrollRef={scrollRef} right={...} center={...} />
+  )}
+
+  {/* 3. Scroll container — full-screen */}
+  <div ref={scrollRef} className="absolute inset-0 overflow-y-auto">
+    <div ref={contentDivRef} className="px-[168px|10.5rem]" style={{ paddingTop: "280px" }}>
+      ...conteúdo...
       <div ref={lastItemRef}>último item</div>
     </div>
-  </ScrollColumn>
-
-  {/* Coluna esquerda — z-10, pointer-events-none no wrapper */}
-  <div pointer-events-none relative z-10 px-[10.5rem] pt-20 pb-20 h-full flex-col>
-    <Header />
-    <div ref={leftContentRef} flex-1 w-fit flex-col justify-between>
-      {/* Topo: bio/menu de seções */}
-      {/* Rodapé: monograma */}
-    </div>
-    {/* Label/seletor central — absolute top-1/2 -translate-y-1/2 */}
   </div>
 
-  {/* Tag swipe/back-to-top — absolute, sobrepõe módulo direito */}
-  <div absolute bottom-[104px] right-[88px] z-20 pointer-events-auto>
-    {atEnd ? <button back-to-top /> : <div swipe-up />}
+  {/* 4. Header flutuante — z-10, pointer-events-none no wrapper */}
+  <div className="pointer-events-none absolute top-0 inset-x-0 z-10 px-[72px] pt-[72px]">
+    <div className="pointer-events-auto">
+      <Header menuNav={...} />
+    </div>
   </div>
 
 </div>
 ```
 
-### Tag swipe / back-to-top
+### Por que DOM order importa
 
-Posição: `absolute bottom-[104px] right-[88px] z-20` — centro vertical alinhado matematicamente com o centro do monograma (monograma: 103px altura, base em `pb-20` = 80px → centro em 131.5px → tag 56px → `bottom = 103.5px ≈ 104px`).
+O `PageFooter` fica **antes** do scroll container no DOM. Ambos têm `position: absolute bottom-0`. Em situação normal, o `z-20` do footer garante que ele fica acima do scroll container.
 
-**Swipe-up** (default):
-- 56px altura, `rounded-full`, `px-6`
-- Surface: `bg-[#A6AA74]/20` (cor `#A6AA74`, opacidade 20%)
-- Fenix 20pt, `text-[#3B4028]`
-- Não clicável (`cursor-default`)
+Durante a saída (exit animation): `footerEl.style.zIndex = "auto"` remove a vantagem z-20. O scroll container, sendo posterior no DOM e sem z-index explícito, pinta naturalmente por cima — efeito de carrossel passando sobre o footer.
 
-**Back to top** (quando `atEnd = true`):
-- Mesma base do swipe
-- Hover: `bg-[#F6F3E6]` sólido + `ring-1 ring-[#DEDDCE]`
-- `pl-6 pr-5 gap-2` (padding assimétrico + gap para ícone)
-- Ícone: `<ArrowUp size={20} />` da Phosphor Icons
-- Clique → `scrollToTop()` (scroll suave ao topo)
+### Scroll forwarding no footer
 
-### Rodapé (módulo esquerdo)
+O `PageFooter` tem `onWheel` que repassa eventos ao `scrollRef`. Sem isso, o usuário não consegue rolar quando o ponteiro está sobre o footer (o footer captura os eventos por ter `pointer-events: auto`).
 
-O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé do `leftContentRef` via `justify-between`. A tag swipe/back é independente e posicionada absolutamente à direita.
+### Regras de posicionamento (atualizado sessão 15)
 
-### Regras de posicionamento
+| Elemento | Track | Craft |
+|---|---|---|
+| Header `pt` (desktop) | `px-[72px] pt-[72px]` | `px-[72px] pt-[72px]` |
+| Content `paddingTop` | `280px` | `280px` |
+| Content `px` | `px-[168px]` | `px-[10.5rem]` |
+| BlurOverlay height | 280px | 280px |
+| BlurOverlay solidUntil | "80%" | "80%" |
+| PageFooter center | — (vazio) | Prev/Next pill `w-[296px]` |
+| PageFooter right | FooterBackToTop | FooterBackToTop |
+| Footer `px` | `px-[72px]` | `px-[72px]` |
 
-| Elemento | Posição |
-|---|---|
-| Header | `pt-20` = 80px do topo |
-| BlurOverlay | 185px, sticky top-0 na scroll column |
-| Gap coluna esquerda → direita | 80px (via `leftContentRef`) |
-| Primeiro item | Centro em 50vh via `paddingTop` |
-| Último item | Centro em 50vh via `paddingBottom` |
-| Label/seletor central | `absolute top-1/2 -translate-y-1/2` |
-| Tag swipe/back | `absolute bottom-[104px] right-[88px]` |
-| Monograma | Rodapé do `leftContentRef`, `w-[88px]` |
+### Animação de entrada e saída
+
+Ver seção 7.20 (`useFooterAnimation`) para documentação completa do comportamento.
 
 ---
 
@@ -400,8 +488,21 @@ O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé
 ## 10. Página: Track (`/track`) ✅ COMPLETA
 
 - **Ordem da timeline:** reversa — mais recente primeiro (2026 → 2011). Array em `page.tsx` declarado nessa ordem.
-- **"a few steps:":** `font-fenix text-[24px]` — mesmo tamanho dos seletores verticais da /craft.
-- *(tag swipe/back reposicionada — ver seção 8)*
+- **"a few steps:" removido** — não faz mais parte da página.
+
+### Desktop layout (atualizado sessão 15 — refatoração completa)
+
+Adota o mesmo padrão de content-module + footer da Craft (seção 8).
+
+**Floating header:** `px-[72px] pt-[72px]`. `menuNav` com o texto "20 years across Design, Experiences and Technology." em Geist Light 40px, uma linha (`whitespace-nowrap`).
+
+**Scroll container:** `absolute inset-0 overflow-y-auto`. Content div: `px-[168px]`, `paddingTop: "280px"`.
+
+**Timeline:** `flex flex-col`. Cada item: `<div className="border-b border-[#DEDDCE] py-10">`. **Sem** `border-t` no primeiro item (removido por request). `lastItemRef` no último item.
+
+**Footer:** `PageFooter` com `right={<FooterBackToTop />}` — sem slot `center` (sem Prev/Next na track).
+
+**`useFooterAnimation`:** `resetKey` não é necessário (timeline não muda); sem `resetKey` prop.
 
 ### Mobile layout
 
@@ -416,7 +517,7 @@ O monograma `dl-monogram.svg` (`w-[88px]`, altura natural 103px) fica no rodapé
 
 ## 11. Página: Craft (`/craft`)
 
-*(estrutura desktop inalterada — tag swipe/back reposicionada, ProjectSelector usa NavSelector underline, ver seções 7 e 8)*
+*(estrutura desktop refatorada na sessão 15 — ver seção 8 para o novo padrão)*
 
 ### Password Gate (Selected Works) ✅ IMPLEMENTADO
 
@@ -476,12 +577,33 @@ footer div (bg #313621, fixed bottom-0, z-[20])  ← ATRÁS do card
 - [x] **Mobile polish — Track timeline, craft footer reveal, home tagline** ← feito na sessão 10
 - [x] **Deploy publicado** ← sessão 9 — `douglima.work` no ar
 - [x] **Extração de componentes, design system, a11y, PasswordGate** ← feito na sessão 11
-- [ ] **Pass de consistência desktop** ← próxima sessão — revisar desktop contra padrões mobile e DS/DX da sessão 11
-- [ ] **Selected Works — dados reais** — Doug exporta assets, Claude Code popula `data.ts`
+- [x] **Pass de consistência desktop** ← feito na sessão 12
+- [x] **Ajustes de componentes home + ContactButton** ← feito na sessão 13
+- [x] **Novo header craft desktop + SectionDropdownDesktop + footer condicional** ← feito na sessão 14
+- [x] **Refatorar módulo de conteúdo (craft + track)** ← feito na sessão 15
+- [x] **Refatorar footer (craft + track)** ← feito na sessão 15 — `useFooterAnimation` + `PageFooter`
+- [x] **Selected Works — dados reais** ← completo — `project-picking-handheld` (9 imgs) + `project-checkin-desktop` (11 imgs)
+
+### Ajustes em andamento (batch atual)
+
+- [x] **Unificar home footer com `PageFooter`** — componente único com variantes por página (ver seção 18)
+- [ ] **Transições entre páginas** — ver seção 19 (em discussão)
+
+### Depois dos ajustes (não bloqueia)
+
+- [ ] **Pass de responsividade** — logo lettering mobile size, header height cascade (ver seção 16)
 - [ ] **Variável `NDA_PASSWORD` na Vercel** — adicionar no painel antes do deploy (`dvault`)
-- [ ] Meta tags (og:image, description, favicon)
-- [ ] Transições entre páginas
-- [ ] Cloudflare Email Routing (`hello@douglima.work` → Gmail)
+- [ ] **Meta tags** (og:image, description, favicon)
+- [ ] **Cloudflare Email Routing** (`hello@douglima.work` → Gmail)
+
+### Limpeza final (executar junto, no fim de tudo)
+
+- [ ] Deletar `app/components/ControlPill.tsx`
+- [ ] Deletar `app/components/ScrollColumn.tsx`
+- [ ] Deletar `app/hooks/useSplitLayout.ts`
+- [ ] Deletar `app/craft/ProjectCarousel.tsx`
+- [ ] Deletar `app/craft/ProjectSelector.tsx`
+- [ ] Verificar imports órfãos após deleção (`grep -r "ControlPill\|ScrollColumn\|useSplitLayout\|ProjectCarousel\|ProjectSelector" app/`)
 
 ---
 
@@ -495,43 +617,47 @@ footer div (bg #313621, fixed bottom-0, z-[20])  ← ATRÁS do card
 
 ---
 
-## 14. Arquivos do projeto (atualizado — sessão 11)
+## 14. Arquivos do projeto (atualizado — sessão 15)
 
 ```
 doug-lima/
 ├── .env.local                        # NDA_PASSWORD=dvault (não commitado)
 ├── app/
 │   ├── components/
-│   │   ├── Header.tsx                # Logo + nav — mobile: fixed+gradiente; desktop: in-flow
+│   │   ├── Header.tsx                # PageNav + menuNav? prop — mobile: fixed+gradiente; desktop: floating
 │   │   ├── MosaicBackground.tsx      # Mosaico animado — inline styles críticos, .mosaic-container no CSS
-│   │   ├── NavSelector.tsx           # Seletor reutilizável: variant pill|underline, direction row|col
-│   │   ├── PageLayout.tsx            # Layout padrão: usa Monogram, pt-[144px] mobile / pt-20 desktop
-│   │   ├── BlurOverlay.tsx           # Gradiente fade 185px (desktop scroll columns)
-│   │   ├── ScrollColumn.tsx          # overflow-y-auto + BlurOverlay embutido
+│   │   ├── NavSelector.tsx           # Seletor: variant pill|underline, textSize, pillHeight, gap
+│   │   ├── PageLayout.tsx            # Layout padrão: px-10 mobile / px-[72px] desktop (home only)
+│   │   ├── PageFooter.tsx            # Footer desktop — forwardRef, onWheel forwarding, center+right slots
+│   │   ├── BlurOverlay.tsx           # Gradiente fade configurável: height + solidUntil
+│   │   ├── ScrollColumn.tsx          # ⚠️ Não usado — pode ser deletado futuramente
 │   │   ├── TimelineBlock.tsx         # Bloco da timeline desktop (ano | texto | logo)
 │   │   ├── TimelineItem.tsx          # Row da timeline mobile — logo sizing + alinhamento encapsulados
-│   │   ├── Monogram.tsx              # Monograma DL svg — size sm (88px) / lg (104px), aria-hidden
+│   │   ├── ContactButton.tsx         # Botão de contato — overlay ancorado ao trigger, hover desktop, a11y
+│   │   ├── Monogram.tsx              # Monograma DL svg — size sm(88)/md(100)/lg(104)/4xl(164)px, aria-hidden
 │   │   ├── BackToTopButton.tsx       # Botão back to top mobile — pointer-events pass-through, spring anim
-│   │   └── ControlPill.tsx           # Tag swipe/back-to-top desktop — atEnd toggle
+│   │   └── ControlPill.tsx           # ⚠️ Não usado — pode ser deletado futuramente
 │   ├── hooks/
-│   │   └── useSplitLayout.ts         # Hook split layout — IntersectionObserver p/ atEnd
+│   │   ├── useFooterAnimation.ts     # Hook: enter (easeOutBack+easeOutQuint) + exit scroll-driven 60%
+│   │   └── useSplitLayout.ts         # ⚠️ Não usado — pode ser deletado futuramente
 │   ├── track/
-│   │   └── page.tsx                  # Track completa ✅ — usa TimelineItem, BackToTopButton, ControlPill
+│   │   └── page.tsx                  # Track: floating header, scroll container, useFooterAnimation
 │   ├── craft/
 │   │   ├── actions.ts                # Server Action: verifyPassword
 │   │   ├── data.ts                   # Tipos + dados dos projetos
-│   │   ├── ProjectCarousel.tsx       # Coluna direita: info block + image displays
-│   │   ├── ProjectSelector.tsx       # Seletor vertical — usa NavSelector underline
+│   │   ├── ProjectCarousel.tsx       # ⚠️ Não usado — pode ser deletado futuramente
+│   │   ├── ProjectSelector.tsx       # ⚠️ Não usado — pode ser deletado futuramente
 │   │   ├── SectionDropdown.tsx       # Dropdown mobile Playground/Selected Works — a11y + focus return
+│   │   ├── SectionDropdownDesktop.tsx# Dropdown desktop — dark pill, width equalization, hover states
 │   │   ├── PrevNextBar.tsx           # Bar Prev/Next mobile — z-20, safe-area-inset-bottom
 │   │   ├── PasswordGate.tsx          # Modal NDA — backdrop blur, PasswordDisplay, PasswordInput
-│   │   └── page.tsx                  # Craft: Playground ✅ / Selected Works gate ✅ / dados PENDENTE
-│   ├── globals.css                   # Cores, fontes, keyframes, prefers-reduced-motion
+│   │   └── page.tsx                  # Craft: floating header, scroll container, useFooterAnimation, Prev/Next
+│   ├── globals.css                   # Cores, fontes, keyframes: control-bar-enter, monogram-enter, card-reveal
 │   ├── layout.tsx                    # Geist + Fenix, metadata
 │   └── page.tsx                      # Home ✅
 ├── docs/
 │   ├── SESSION-HANDOFF-PORTFOLIO.md  # Este arquivo
-│   ├── DESIGN-SYSTEM.md              # Tokens, inventário de componentes (15), specs, arquitetura mobile/desktop
+│   ├── DESIGN-SYSTEM.md              # Tokens, inventário de componentes, specs, arquitetura mobile/desktop
 │   ├── BEST-PRACTICES.md             # DX, a11y, responsividade, performance, Tailwind v4 pitfalls
 │   ├── PRD-SELECTED-WORKS.md         # Dados + assets para Selected Works
 │   ├── PRD-CRAFT-PASSWORD.md         # PRD do password gate (referência histórica)
@@ -695,32 +821,268 @@ doug-lima/
    - Erro: após remover `timelineRef`, o import `useRef` ficou sem uso em `track/page.tsx`.
    - Regra: ao remover uso de uma importação, checar e remover o import junto.
 
+### Sessão 13 — Ajustes de componentes home + ContactButton
+
+#### ✅ O que foi implementado
+
+- **`ContactButton.tsx` extraído:** componente autocontido com estado próprio (`isOpen`, `copied`). Overlay ancorado ao trigger via `position: relative` no container + `absolute bottom-0 right-0` no painel — sem coordenadas hardcoded de viewport. Funciona em qualquer breakpoint.
+- **Hover desktop no ContactButton:** `md:hover:bg-[#E8E9D9]` — mesma surface do hover das pills do NavSelector. Desktop-only via prefixo `md:`.
+- **Focus management no ContactButton:** abre → foca LinkedIn (primeiro pill via `firstPillRef`); fecha → retorna foco ao trigger via `triggerRef`. Botão de fechar com `aria-label="Close contact menu"`.
+- **`page.tsx` (home) virou Server Component:** toda lógica de estado movida para `ContactButton`. Arquivo reduzido para ~25 linhas sem `"use client"`.
+- **Monogram: tamanhos `"md"` e `"4xl"` adicionados:** `sm`=88px / `md`=100px / `lg`=104px / `4xl`=160px. Desktop passou para `size="4xl"` (160px) em craft, track e home.
+- **`PageLayout.tsx`:** className do Monogram simplificado de `h-[104px] md:w-[88px] md:h-auto` para `h-[104px] md:w-[160px] md:h-auto` — altura sempre proporcional ao SVG no desktop.
+
+#### Decisão de arquitetura — posicionamento do overlay ContactButton
+
+O overlay usava `fixed inset-0` com conteúdo em `bottom-10 right-10` (hardcoded). Isso desalinhava no desktop porque o botão vive em `px-[10.5rem] pb-20`. A solução correta é ancorar o painel ao próprio botão via relative/absolute — não às bordas da viewport. Isso elimina qualquer dependência de coordenadas do layout pai e garante alinhamento em qualquer breakpoint.
+
+#### Decisão de estratégia — responsividade
+
+Identificado que vários elementos têm tamanho fixo em ambos os breakpoints quando deveriam escalar:
+- Logo lettering: `h-[32px]` fixo (SVG 164×32px natural)
+- Monogram: lógica de sizing responsivo espalhada por className overrides
+
+Decisão: terminar os ajustes de componentes desktop primeiro, depois executar um **pass de responsividade unificado** que trate todos os elementos de uma vez — evitando múltiplos cascades parciais.
+
 ---
 
-## 16. Próxima sessão — Pass de consistência desktop
+### Sessão 12 — Pass de consistência desktop
 
-**Objetivo:** revisar todas as páginas desktop contra os padrões mobile e diretrizes de DS/DX estabelecidos na sessão 11.
+#### ✅ O que foi implementado
 
-### O que auditar
+- **`ProjectCarousel.tsx` logo:** `max-h-full max-w-full object-contain` → `h-[56px] w-auto object-contain`. Mobile e desktop agora usam o mesmo padrão de logo no info block.
+- **`ControlPill.tsx` token:** `text-[#3B4028]` → `text-text-active` (2 ocorrências). Valor idêntico ao token — substituído para garantir consistência se o token mudar.
+- **`.card-reveal` CSS class:** transition do card mobile (`craft/page.tsx`) movida de inline `style` para `globals.css`. Agora é afetada pelo `@media (prefers-reduced-motion: reduce)` que já aplica `transition-duration: 0.01ms !important`.
+- **`:focus-visible` global:** adicionado em `globals.css` — `outline: 2px solid #3B4028; outline-offset: 2px`. Cobre todos os elementos interativos com uma regra centralizada, cor consistente com `text-text-active`.
+- **`DESIGN-SYSTEM.md` atualizado:** 3 anotações obsoletas corrigidas (PasswordGate removido de "Padrões a extrair"; a11y checklist marcado como implementado; PasswordGate na estrutura de arquivos corrigido para "reescrito sessão 11 — ativo").
 
-| Componente / área | O que verificar |
+#### Resultado da auditoria desktop
+
+A base desktop estava largamente consistente. Delta real encontrado: 2 correções de código (logo height + token), 2 melhorias de acessibilidade (focus rings + prefers-reduced-motion), 1 doc desatualizado.
+
+| Área auditada | Resultado |
 |---|---|
-| `Header.tsx` | Focus management, a11y labels nos links de nav |
-| `NavSelector.tsx` | Estados pill: default, hover, active — verificar em ambos breakpoints |
-| `ControlPill.tsx` | Comportamento `atEnd` em /craft e /track, hover state |
-| `PasswordGate.tsx` | Backdrop blur funciona em Safari (WebkitBackdropFilter), foco no input, Escape fecha |
-| `ProjectCarousel.tsx` | Altura logo `h-[56px] w-auto` no desktop (info block) |
-| `ProjectSelector.tsx` | Underline variant, gap={16}, alinhamento vertical com o bio |
-| `Monogram.tsx` | `size="sm"` no desktop (w-[88px]) em craft e track |
-| Section switcher desktop | Dois botões `ArrowRight` em craft — verificar hover/active, cores, tamanhos contra DS |
-| Tokens de cor | Todos os valores hexadecimais inline correspondem aos tokens de `DESIGN-SYSTEM.md` |
-| Tipografia | Tamanhos/pesos Geist e Fenix conforme specs do DS |
-| Espaçamento | `px-[10.5rem]`, `pt-20`, `pb-20` consistentes entre /home, /track, /craft |
-| Animações | `prefers-reduced-motion` respeitado nas transições desktop (card translateY, ControlPill hover) |
-| Focus rings | Todos os elementos interativos têm foco visível no desktop |
+| Header — a11y, focus | OK — sem alterações |
+| NavSelector — estados pill | OK — sem alterações |
+| ControlPill — token, hover | ✅ corrigido token |
+| PasswordGate — backdrop, focus, Escape | OK — sem alterações |
+| ProjectCarousel — logo height | ✅ corrigido `h-[56px] w-auto` |
+| ProjectSelector — underline, gap | OK — sem alterações |
+| Monogram — size="sm" desktop | OK — sem alterações |
+| Section switcher desktop | OK — sem alterações |
+| Tokens de cor | ✅ corrigido ControlPill |
+| Tipografia | OK — sem alterações |
+| Espaçamento (`px-[10.5rem]`, pt/pb-20) | OK — sem alterações |
+| Animações + prefers-reduced-motion | ✅ card-reveal class |
+| Focus rings | ✅ :focus-visible global |
 
-### Referências para a sessão
+### Sessão 14 — Novo header craft desktop, SectionDropdownDesktop, footer condicional
 
-- `docs/DESIGN-SYSTEM.md` — tokens, specs completas de todos os componentes, arquitetura
-- `docs/BEST-PRACTICES.md` — a11y checklist, responsividade, Tailwind v4 pitfalls
-- Seção 8 deste documento — especificações do split layout desktop
+#### ✅ O que foi implementado
+
+- **`atEnd` via `getBoundingClientRect()`:** substituiu IntersectionObserver e `scrollTop+clientHeight` por `lastEl.getBoundingClientRect().bottom <= container.getBoundingClientRect().bottom + 4`. Único método que dispara exatamente quando o último elemento está visível dentro do container, independente do paddingBottom.
+- **`monogram-enter` animation:** scale 0.82→1 + opacity 0→1, ease-out expo `cubic-bezier(0.16, 1, 0.3, 1)`, 0.6s. Monograma desktop (craft + track) agora é condicional ao `atEnd` e anima na entrada. Junto com o botão "Back to top" formam o "footer" do desktop.
+- **`SectionDropdownDesktop.tsx` criado:** dropdown escuro para seleção de seção no desktop, baseado no estilo do PrevNextBar. Width equalization via renderização permanente das duas linhas (segunda tem `height:0` quando fechada). Hover states: trigger `#FAFAF5` → `#C7FF04`; opção alternativa `#FAFAF5` → `#C7FF04` + trigger reverte para `#FAFAF5`.
+- **Header refatorado para dois blocos:** `LogoAndNav` → `PageNav`. Nova prop `menuNav?: React.ReactNode`. Desktop: `PageNav` (logo + craft/track) + `MenuNav` (dropdown + seletores de projeto). Wrapper `h-[56px] flex items-center` no NavSelector fixa alinhamento vertical independente do estado do dropdown.
+- **`NavSelector` props `textSize` e `pillHeight`:** backward-compatible. `pillHeight="h-[40px]"` no header PageNav, `textSize="text-[18px]"` nos seletores de projeto do MenuNav.
+- **Header PageNav ajustes visuais:** lettering `h-[40px]` (era 32px), pills `h-[40px]`, `px-5` (20px), `gap={12}`, `items-center` (era `items-start`). Labels capitalizados: "Craft", "Track".
+- **`BlurOverlay` configurável:** `height` e `solidUntil` como props. Craft: `height=280, solidUntil="80%"`.
+- **`ScrollColumn` e `ProjectCarousel` passam blur:** chain `blurHeight`/`blurSolidUntil` do `craft/page.tsx` até o `BlurOverlay`.
+- **`useSplitLayout` aceita `blurHeight`:** track usa default 185, craft usa 224 (header dois blocos).
+- **`pt-20` → `pt-[72px]`** em todas as páginas desktop (craft, track, PageLayout). Mudança estrutural global.
+- **`ProjectSelector` removido do desktop craft:** seletores migram para o `MenuNav` no header.
+- **Botão "Back to top" desktop:** `absolute bottom-[148px] right-[10.5rem]`, spring `control-bar-enter`. Aparece junto com o monograma quando `atEnd = true`.
+
+#### ❌ Erros cometidos — NÃO repetir
+
+1. **`BlurOverlay` não cobria o header de dois blocos.**
+   - Erro: `h-[185px]` cobre o PageNav mas não o MenuNav (header total ~200px). Conteúdo do carrossel ficava visível atrás do segundo bloco.
+   - Correto: calcular altura total do header (pt + PageNav + MenuNav) e configurar `blurHeight` e `blurSolidUntil` para cobrir completamente. Aumentar `blurHeight` no hook para reposicionar o primeiro item abaixo do header.
+
+2. **`scrollTop + clientHeight >= scrollHeight - 10` dispara antes do fim.**
+   - Causa: o `paddingBottom` adiciona espaço vazio abaixo do último item, então o scroll "termina" com o último item ainda centralizado na tela, não na borda inferior. O check de scrollHeight considera o padding — não a posição real do último elemento.
+   - Correto: usar `getBoundingClientRect()` para medir posição real do elemento vs. container.
+
+3. **`onScroll()` chamado imediatamente ao montar pode dar falso positivo.**
+   - Risco: se o container não tem overflow (conteúdo curto), `scrollHeight === clientHeight`, e qualquer check de scroll imediato retorna true.
+   - Correto: com `getBoundingClientRect()`, o último item estará abaixo do container no mount (scroll=0), então retorna false corretamente.
+
+4. **Tentar suavizar o blur aumentando `blurHeight` total.**
+   - Erro: aumentar de 280 para 360px para "mais fade" — resultou em degradação visual porque a zona sólida se estendia muito abaixo do header, criando um efeito de fundo sólido grande.
+   - Correto: o fade suave é melhor controlado pela diferença entre `blurHeight` e a zona sólida (`solidUntil`). Manter `blurHeight` próximo ao necessário.
+
+### Sessão 15 — Animação scroll-driven, useFooterAnimation, PageFooter, refatoração Track
+
+#### ✅ O que foi implementado
+
+- **Animação de saída scroll-driven:** substituiu a saída por `!atEnd` por uma saída contínua ancorada ao `enterScrollTopRef`. O footer começa a sair imediatamente ao primeiro pixel de scroll-back, a 60% da velocidade do scroll (parallax). O carousel passa sobre o footer enquanto o footer sai suavemente em paralelo.
+- **`enterScrollTopRef` como âncora:** inicializado em `-1` (bloqueia exit durante enter). Setado para `container.scrollTop` exatamente quando a animação de entrada termina. Isso garante que o exit começa do ponto exato onde o enter terminou — não do threshold `atEnd` (que está `footerHeight` pixels antes).
+- **DOM order z-index trick documentado:** footer antes do scroll container no DOM. Em condição normal, `z-20` garante visibilidade. Durante exit: `footerEl.style.zIndex = "auto"` remove a vantagem; o scroll container, posterior no DOM, pinta por cima.
+- **`onWheel` forwarding no PageFooter:** sem isso, o usuário não consegue rolar quando o ponteiro está sobre o footer. Forwarding respeita `deltaMode` (pixel, line, page).
+- **`useFooterAnimation` hook criado:** encapsula toda a lógica de enter + exit. Parâmetro `resetKey` para reset ao trocar de projeto na craft.
+- **`PageFooter` componente criado:** `forwardRef`, slots `center?` e `right`, `onWheel` forwarding embutido, `grid grid-cols-3`, padding `px-[72px] py-20`.
+- **`FooterBackToTop` extraído:** botão 3 estados (default/hover/active) exportado de `PageFooter.tsx`.
+- **Craft refatorada:** removidos ~150 linhas de animation state/refs/effects. Substitui `useSplitLayout`, `ProjectCarousel`, `ScrollColumn` pelo novo padrão. Imagens: `className="w-full overflow-hidden"` (sem `rounded-lg`, sem `bg-surface-tag`).
+- **Craft Prev/Next pill:** largura final `w-[296px]`, fonte Geist Light, hover `#C7FF04`.
+- **Track completamente reescrita:** split layout → floating header + scroll container. "20 years across..." para o `menuNav` do header (40px, `whitespace-nowrap`). Timeline como scroll content com `border-b border-[#DEDDCE] py-10` entre itens (sem border-t no primeiro). `PageFooter` com só `FooterBackToTop`.
+- **`PageLayout` padding:** `md:px-[10.5rem]` → `md:px-[72px]` — alinha com header e footer em todas as páginas.
+- **Padrão sistêmico definido:** Header = Block 1 (Logo+Nav) + Block 2 opcional (menuNav). Footer = Monogram (esq) + center (opcional) + right. Todas as páginas compartilham este padrão.
+
+#### ❌ Erros cometidos — NÃO repetir
+
+1. **Exit anchorado ao threshold `atEnd` — timing errado.**
+   - Causa: `atEnd` dispara quando `lastBottom <= containerBottom + 4`. Mas a animação de entrada rola o container `footerHeight` pixels além disso. Se a saída só começa quando `!atEnd`, significa que o usuário precisa rolar `footerHeight` pixels de volta antes de o footer começar a sair — o carousel já cobre o footer inteiro antes de ele se mover.
+   - Correto: anchorar em `enterScrollTopRef` (scrollTop no fim do enter). Exit começa ao primeiro pixel de scroll-back.
+
+2. **Bloco duplicado de footer JSX.**
+   - Erro: ao mover o footer antes do scroll container no DOM para o z-index trick, o bloco antigo de JSX (após o scroll container) não foi removido. Resultado: dois footers renderizados.
+   - Correto: ao mover JSX de posição, sempre remover o original.
+
+3. **`Edit` falhou por string não encontrada após edição anterior.**
+   - Causa: ao editar imports de um arquivo, o conteúdo mudou. Uma segunda edição com `old_string` copiado antes da primeira mudança não encontrou o texto.
+   - Correto: ao fazer múltiplas edições sequenciais num arquivo, reler (com offset) a seção a ser editada em seguida para ter o texto atual.
+
+#### Definições de design system desta sessão
+
+- **Padrão sistêmico de Header:** Block 1 (Logo+Nav) sempre presente. Block 2 (`menuNav`) opcional, variável por página. Home: sem Block 2. Craft: dropdown + seletores. Track: texto "20 years across...".
+- **Padrão sistêmico de Footer:** Monogram (esq, `size="4xl"`). Center opcional (Craft: Prev/Next). Right obrigatório (Craft + Track: back to top; Home: contato). Padding `px-[72px] py-20` em todas as páginas.
+- **Padding lateral desktop padronizado:** `72px` em header, footer e content-module (onde aplicável). Eram `10.5rem` (168px) em algumas páginas.
+- **Imagem containers na craft:** `w-full overflow-hidden` sem arredondamento e sem fundo — conteúdo transparente.
+- **Prev/Next na craft:** pill escuro `bg-[#121210]`, `w-[296px]`, Geist Light 18px, hover `#C7FF04`, icons `CaretLeft`/`CaretRight` 18px.
+
+---
+
+## 16. Próxima sessão — Selected Works (dados reais)
+
+**Objetivo:** garantir que todos os elementos e estruturas de layout escalem corretamente entre mobile e desktop, sem tamanhos fixos onde deveria haver responsividade.
+
+### Racional
+
+O projeto foi construído mobile-first e depois ajustado para desktop. Alguns elementos ficaram com tamanhos fixos em ambos os breakpoints — funcionam, mas não escalam. O pass de responsividade trata isso de forma unificada, evitando múltiplos cascades parciais.
+
+### Elementos a auditar e ajustar
+
+| Elemento | Estado atual | O que fazer |
+|---|---|---|
+| **Logo lettering** (`h-[32px] w-auto`) | Fixo em ambos os breakpoints | Escalar no mobile: `h-[24px] md:h-[32px]` ou `h-[28px] md:h-[32px]` |
+| **Header height cascade** | Depende da altura do logo | Recalcular `pt-[144px]`/`pt-[156px]` após ajustar logo |
+| **Monogram** | Sizes via prop + className overrides espalhados | Unificar: prop responsiva ou classes responsivas direto no componente |
+| **NavSelector pill height** | `h-[32px]` fixo | Verificar se precisa escalar no mobile |
+| **ControlPill** | Desktop only (split layout) | Sem pendência |
+| **ContactButton** | Mesmo botão em ambos (by design) | Sem pendência |
+| **BackToTopButton / PrevNextBar** | Mobile only (`md:hidden`) | Sem pendência |
+| **Tipografia body** | `text-[28px] md:text-[40px]` | Já responsivo ✓ |
+| **Espaçamento lateral** | `px-10 md:px-[10.5rem]` | Já responsivo ✓ |
+| **Padding vertical** | `pb-10 md:pb-20` | Já responsivo ✓ |
+
+### Ordem de execução recomendada
+
+1. **Logo lettering** — decidir o valor mobile e aplicar em `Header.tsx`
+2. **Header height** — recalcular e atualizar `pt-[144px]` em todas as páginas que usam o Header mobile
+3. **Monogram** — decidir se o sizing responsivo vai via prop ou className, e unificar
+4. **Revisão geral** — conferir no browser em 375px, 768px e 1280px
+
+### Impacto do ajuste do logo
+
+O header mobile atual:
+```
+pt-10 (40px) + py-6 top (24px) + logo h-[32px] + py-6 bottom (24px) = 120px sólido
+120px sólido + 24px gradiente = 144px total → pt-[144px] nas páginas
+Craft: pt-[144px] + 12px respiro = pt-[156px]
+```
+
+Se o logo mobile passar para `h-[24px]`:
+```
+40 + 24 + 24 + 24 = 112px sólido + 24px gradiente = 136px total → pt-[136px]
+Craft: pt-[148px]
+```
+
+Se `h-[28px]`:
+```
+40 + 24 + 28 + 24 = 116px sólido + 24px gradiente = 140px total → pt-[140px]
+Craft: pt-[152px]
+```
+
+**Arquivos afetados pelo cascade do logo:**
+- `app/components/Header.tsx` — altura da img
+- `app/craft/page.tsx` — `pt-[156px]` mobile
+- `app/track/page.tsx` — `pt-[144px]` mobile (via classe direta)
+- `app/components/PageLayout.tsx` — `pt-[144px]` mobile
+
+### Referências
+
+- `docs/BEST-PRACTICES.md` seção 4 — responsividade, mobile-first, unidades de viewport
+- `app/components/Header.tsx` — estrutura do header mobile/desktop
+- Seção 7.11 deste documento — alturas do header
+
+---
+
+## 18. Unificação do footer (home + craft + track) — batch atual
+
+**Objetivo:** um único componente `PageFooter` com variante por contexto, eliminando o footer inline do `PageLayout`.
+
+### Variantes
+
+| Variante | Página | Comportamento |
+|---|---|---|
+| `"floating"` (default) | craft, track | `absolute bottom-0`, z-20, bg-base, forwardRef, onWheel forwarding, animado via `useFooterAnimation` |
+| `"static"` | home | in-flow, sem position absolute, sem z-index, sem animação |
+
+### Mudanças necessárias
+
+1. **`PageFooter.tsx`:** aceitar `variant?: "floating" | "static"` (default `"floating"`). `scrollRef` vira opcional (só usado no floating). Quando `"static"`: remover `absolute bottom-0 left-0 right-0 z-20 bg-bg-base`, substituir por `mt-auto`.
+2. **`PageLayout.tsx`:** remover o `<footer>` inline atual, usar `<PageFooter variant="static" right={footerContent} />`. Tornar `scrollRef` dispensável.
+3. **Home (`page.tsx`):** continua usando `PageLayout` com `footerContent` — sem mudança na API da página.
+
+### Consequências
+
+- Monogram no home footer fica dentro do `PageFooter` como nos demais — consistência total.
+- `PageLayout` fica mais limpo: só padding + Header + children + footer condicional.
+- `FooterBackToTop` e qualquer slot futuro são reutilizáveis entre variantes.
+
+---
+
+## 19. Transições entre páginas — em discussão
+
+**Status:** definição em progresso (sessão 16)
+
+*(seção será preenchida após decisão de abordagem)*
+
+---
+
+## 17. ✅ Módulo de conteúdo + Footer (craft + track) — RESOLVIDO sessão 15
+
+O split layout foi completamente substituído pelo padrão content-module + footer documentado na seção 8.
+
+**craft/page.tsx desktop (atual):**
+```
+<div h-dvh overflow-hidden relative>
+  <BlurOverlay height={280} solidUntil="80%" />
+  {isFooterMounted && <PageFooter center={PrevNext} right={BackToTop} />}
+  <div ref={scrollRef} absolute inset-0 overflow-y-auto>
+    <div ref={contentDivRef} px-[10.5rem] paddingTop=280px>
+      info block (h-[144px])
+      images (mt-[80px], gap-[80px], lastItemRef no último)
+    </div>
+  </div>
+  <div pointer-events-none absolute top-0 inset-x-0 z-10 px-[72px] pt-[72px]>
+    <Header menuNav={SectionDropdownDesktop + NavSelector} />
+  </div>
+</div>
+```
+
+**track/page.tsx desktop (atual):**
+```
+<div h-dvh overflow-hidden relative>
+  <BlurOverlay height={280} solidUntil="80%" />
+  {isFooterMounted && <PageFooter right={BackToTop} />}
+  <div ref={scrollRef} absolute inset-0 overflow-y-auto>
+    <div ref={contentDivRef} px-[168px] paddingTop=280px>
+      timeline (flex-col, border-b entre itens, lastItemRef no último)
+    </div>
+  </div>
+  <div pointer-events-none absolute top-0 inset-x-0 z-10 px-[72px] pt-[72px]>
+    <Header menuNav="20 years across..." />
+  </div>
+</div>
+```
