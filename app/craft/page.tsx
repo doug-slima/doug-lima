@@ -26,6 +26,7 @@ export default function Craft() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
+  const monogramRef = useRef<HTMLDivElement>(null);
 
   function scrollToTop() {
     scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -86,14 +87,14 @@ export default function Craft() {
   }, [showPasswordGate]);
 
   useEffect(() => {
-    const onScroll = () => {
-      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 10;
-      const nearTop = window.scrollY < 50;
-      if (atBottom) setFooterRevealed(true);
-      if (nearTop) setFooterRevealed(false);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const el = monogramRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setFooterRevealed(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   useScrollParallax({
@@ -177,7 +178,7 @@ export default function Craft() {
               </>
             )}
 
-            <div className="mt-8">
+            <div className="mt-8" ref={monogramRef}>
               <Monogram widthClass="w-[123px]" />
             </div>
 
