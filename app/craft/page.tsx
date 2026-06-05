@@ -108,7 +108,7 @@ export default function Craft() {
     <>
 
       {/* ── Mobile layout ───────────────────────────────────────────── */}
-      <div className="block md:hidden" style={{ backgroundColor: "#313621" }}>
+      <div className="block md:hidden" style={{ backgroundColor: "#313621", paddingBottom: "104px" }}>
 
         {/* Header — Variant A: Block 1 only (fixed). Block 2 lives in the card and scrolls. */}
         <Header />
