@@ -1,7 +1,7 @@
 # Design System — douglima.work
 
 > Documento vivo de arquitetura de UI, componentes, tokens e princípios de qualidade.
-> Última atualização: 05 jun 2026 — Sessão 22 (responsividade fluida — clamp, --header-h cascade, ajustes spacing mobile)
+> Última atualização: 05 jun 2026 — Sessão 23 (AsciiShader — bg animado home; header transparente na home)
 
 ---
 
@@ -114,7 +114,7 @@ Definidas em `globals.css`:
 |---|---|---|---|
 | `control-bar-enter` | 0.5s | `cubic-bezier(0.34, 1.56, 0.64, 1)` | Entrada do back to top mobile (spring) |
 | `monogram-enter` | 0.6s | `cubic-bezier(0.16, 1, 0.3, 1)` | Entrada do monograma no footer desktop (scale 0.82→1 + opacity 0→1) |
-| `mosaic-scroll` | 120s | `linear infinite` | Background animado da home |
+| `mosaic-scroll` | 120s | `linear infinite` | ⚠️ DEPRECATED — substituído por `AsciiShader` |
 
 Transformação do card reveal (craft mobile):
 - CSS class `.card-reveal` em `globals.css` (afetada por `prefers-reduced-motion`)
@@ -132,9 +132,10 @@ Transformação do card reveal (craft mobile):
 | `NavSelector` | `components/NavSelector.tsx` | `items`, `variant`, `gap`, `textSize`, `pillHeight` | Header, craft mobile |
 | `PageLayout` | `components/PageLayout.tsx` | `children`, `outerClassName`, `footerContent`, `backgroundLayers` | home |
 | `PageFooter` | `components/PageFooter.tsx` | `variant?`, `scrollRef?`, `center?`, `right` | craft desktop, track desktop, home (via PageLayout) |
-| `BlurOverlay` | `components/BlurOverlay.tsx` | `height?`, `solidUntil?` | craft, track |
+| `BlurOverlay` | `components/BlurOverlay.tsx` | `height?`, `solidUntil?` | craft, track (não usado na home — ver §4.1) |
+| `AsciiShader` | `components/AsciiShader.tsx` | `config`, `svgScale?`, `theme?`, `svgPath?`, `svgWidth?`, `svgHeight?`, `colorFn?` | home (substitui MosaicBackground) |
 | `TimelineBlock` | `components/TimelineBlock.tsx` | `year`, `lines`, `logo` | track desktop |
-| `MosaicBackground` | `components/MosaicBackground.tsx` | — | home |
+| `MosaicBackground` | `components/MosaicBackground.tsx` | — | ⚠️ DEPRECATED — substituído por `AsciiShader` |
 | `Monogram` | `components/Monogram.tsx` | `widthClass`, `className?` | craft mobile, track mobile, home (via PageFooter) |
 | `BackToTopButton` | `components/BackToTopButton.tsx` | `paddingBottom`, `zIndex?` | craft mobile |
 | `ContactButton` | `components/ContactButton.tsx` | — | home |
@@ -180,6 +181,30 @@ Desktop (craft/track): floating, pointer-events-none wrapper z-10, px-[72px] pt-
 - **PageNav** (sempre presente): lettering SVG `h-[clamp(28px,7.5vw,32px)] md:h-[40px]` + NavSelector pills `h-[clamp(28px,7.5vw,32px)] md:h-[40px]` `px-[clamp(12px,3.5vw,20px)] md:px-5` `gap={12}`
 - **block2** (opcional, craft desktop): `SectionDropdown` + NavSelector `text-[18px]`
 
+#### Regras de transparência — home (`/`) only
+
+O Header detecta a rota via `usePathname()` e aplica variantes exclusivas da home. Estas regras **não se propagam** para `/craft` ou `/track`.
+
+| Elemento | Outras páginas | Home (`/`) |
+|---|---|---|
+| Mobile bg (`pointer-events-auto` div) | `bg-bg-base` | sem background (transparente) |
+| Mobile blur gradient (24px abaixo do bg) | `linear-gradient(#F9F9F2 → transparent)` | não renderizado |
+
+```tsx
+// Header.tsx — padrão implementado
+const isHome = pathname === "/"
+
+// bg
+<div className={`pointer-events-auto px-8 pt-[44px] ${isHome ? "" : "bg-bg-base"}`}>
+
+// gradiente
+{!isHome && <div style={{ height: "24px", background: "linear-gradient(...)" }} />}
+```
+
+**Motivação:** na home o `AsciiShader` cobre o fundo inteiro. O `bg-bg-base` e o gradiente opacariam o efeito. Nas outras páginas o header precisa de fundo para separar visualmente do conteúdo que scroll por baixo.
+
+**BlurOverlay:** não é passado como `backgroundLayers` na home (`page.tsx`) pelo mesmo motivo — seria uma camada opaca sobre o shader. Craft e Track continuam a usá-lo normalmente.
+
 ---
 
 ### 4.2 `NavSelector`
@@ -190,6 +215,15 @@ Desktop (craft/track): floating, pointer-events-none wrapper z-10, px-[72px] pt-
 - Ativa: `bg-[#C7FF04]` (via inline style — evita purge do Tailwind)
 - Inativa hover: `bg-[#E8E9D9]`, `text-text-active`
 - `textSize` prop — default: `text-[20px] md:text-[24px]`; `text-[18px]` nos seletores de projeto do block2
+
+**Surface default na home (`/`):**
+Pills inativas usam `bg-[#F9F9F2]` no estado default — necessário porque o canvas `AsciiShader` é transparente e as pills precisam de fundo opaco para legibilidade. Aplica-se a mobile e desktop. Os estados hover e active permanecem inalterados.
+
+```
+Default (home): bg-[#F9F9F2] + ring-inset ring-1 ring-[#AFB4A7]
+Hover:          bg-[#E8E9D9] + ring-0
+Active:         bg-[#C7FF04]
+```
 
 **Variant `"underline"`:**
 - `font-fenix text-[24px]`
@@ -294,9 +328,12 @@ Backdrop: fixed inset-0 z-40, rgba(243,242,230,0.10)
 Pills (LinkedIn, Substack, Email):
   w-fit h-[56px] px-5 rounded-full
   font-fenix text-[18px] text-text-default
-  Default: border border-[#AFB4A7], shadow 0px 4px 12px -8px rgba(0,0,0,0.25)
+  Default: bg-[#F9F9F2] + border border-[#AFB4A7] + shadow 0px 4px 12px -8px rgba(0,0,0,0.25)
   Hover:   bg-[#E8E9D9], border-transparent
   Active:  bg-[#C7FF04], border-transparent
+
+  Nota: bg-[#F9F9F2] aplica-se a mobile e desktop — o painel de pills é o mesmo componente
+  em ambos os breakpoints. O fundo opaco é necessário sobre o AsciiShader transparente.
 ```
 
 **`w-fit` por pill:** cada botão hug seu próprio conteúdo, independente da largura dos outros.
@@ -392,6 +429,100 @@ Error state: texto vermelho abaixo do input
 ```
 
 **Escape fecha** e volta para a seção "playground" (listener no `useEffect` da page).
+
+---
+
+### 4.12 `AsciiShader` (home background)
+
+**Arquivo:** `components/AsciiShader.tsx`
+
+Renderizador ASCII density-mapped com interactividade de mouse. Substitui `MosaicBackground` como background animado da home. Canvas 2D, sem WebGL.
+
+#### Como funciona
+
+```
+1. Rasterização (init, uma vez):
+   SVG path → canvas offscreen → pixel mask → amostragem por célula
+   Cada célula acumula: density (pontos que caíram nela) + edgeFactor (dist. à borda)
+
+2. Render por frame:
+   brightness = density×0.5 + edgeFactor×0.3 + wave×waveIntensity×0.3
+   alpha       = alphaDefault + (alphaActive − alphaDefault) × mouseInfluence
+   char        = CHAR_RAMP[ floor(brightness × (len−1)) ]
+
+3. Física (swipe rápido > speedThresh px/s):
+   Chars próximos ao cursor "arrancam" com velocidade inicial, gravidade, drag e tumble
+```
+
+#### Scaling por breakpoint
+
+```
+Desktop (≥768px): scale = viewportWidth  / svgWidth   → shape preenche largura toda
+Mobile  (<768px): scale = viewportHeight / svgHeight  → shape preenche altura toda
+Ambos centrados: offsetX = (W − svgW×scale) / 2,  offsetY = (H − svgH×scale) / 2
+Overflow cortado pelo overflow:hidden do container
+```
+
+#### Props
+
+| Prop | Tipo | Default | Descrição |
+|---|---|---|---|
+| `config` | `AsciiConfig` | — | Obrigatório. Usar `DEFAULT_CONFIG` exportado |
+| `svgScale` | `number` | `1` | Multiplicador sobre o scale base de breakpoint |
+| `theme` | `"light" \| "dark"` | `"dark"` | Controla `clearRect` vs `fillRect` de bg |
+| `svgPath` | `string` | wordmark interno | Path SVG a rasterizar |
+| `svgWidth` | `number` | `1441` | Largura do viewBox do SVG |
+| `svgHeight` | `number` | `1024` | Altura do viewBox do SVG |
+| `colorFn` | `(x,y,w,h) => "r,g,b"` | `() => "195,197,178"` | Cor dos chars como string `"r,g,b"`. Retorna sempre a mesma cor para mono; pode variar por posição para gradientes |
+
+#### `DEFAULT_CONFIG`
+
+| Chave | Valor | Efeito |
+|---|---|---|
+| `cellSize` | `16` | Tamanho de cada célula em px (aumentar = chars maiores, grid mais esparsa) |
+| `speed` | `0.55` | Velocidade da onda de tempo |
+| `waveFreq` | `1.8` | Frequência espacial da onda |
+| `waveIntensity` | `1.2` | Amplitude da onda — controla quanto o flicker idle é visível |
+| `mouseRadius` | `150` | Raio de influência do cursor (px) |
+| `flickerRate` | `5` | Taxa de ciclo do noise estocástico (requer `noiseAmount > 0`) |
+| `noiseAmount` | `0` | Intensidade de noise aleatório — 0 = desativado |
+| `scanlines` | `0.46` | Opacidade das scanlines (estilo CRT). 0 = sem scanlines |
+| `charSet` | `0` | `0` = `" .-+X#"` (minimal), `1` = `" ._-~:;=!*#$@"` (code), `2` = `" ░▒▓█"` (blocks) |
+
+#### Controlo de alpha (light theme)
+
+```
+alphaDefault = 0.08 + brightness × 0.42   → idle, sem mouse: [0.08, 0.50]
+alphaActive  = 0.20 + brightness × 0.75   → cursor próximo:  [0.20, 0.95]
+alpha = alphaDefault + (alphaActive − alphaDefault) × mouseInfluence
+```
+
+#### Uso na home
+
+```tsx
+// app/page.tsx
+<AsciiShader
+  config={DEFAULT_CONFIG}
+  theme="light"         // clearRect → canvas transparente
+/>
+```
+
+Canvas tem `background: transparent` e `alpha: true` no context — o `bg-bg-base` do `PageLayout` aparece por baixo. Não usar `BlurOverlay` junto (cobriria o shader).
+
+#### Para usar com novo SVG
+
+```tsx
+// 1. Colocar o SVG em public/assets/
+// 2. Ler o conteúdo do atributo `d` do path principal
+// 3. Passar via props:
+<AsciiShader
+  config={DEFAULT_CONFIG}
+  theme="light"
+  svgPath={meuPath}
+  svgWidth={viewBoxWidth}
+  svgHeight={viewBoxHeight}
+/>
+```
 
 ---
 
@@ -593,12 +724,13 @@ useScrollParallax({ elementRef: footerRef, scrollRef, factor: 0.4, resetKey: act
 ```
 app/
   components/
+    AsciiShader.tsx          ← home background — density-mapped ASCII + mouse physics
     BackToTopButton.tsx      ← mobile only (craft)
-    BlurOverlay.tsx          ← height + solidUntil configuráveis
+    BlurOverlay.tsx          ← height + solidUntil configuráveis (craft, track — não home)
     ContactButton.tsx        ← home footer
     ControlPill.tsx          ← ⚠️ DEPRECATED — deletar
-    Header.tsx               ← PageNav + block2? prop
-    MosaicBackground.tsx     ← home background
+    Header.tsx               ← PageNav + block2? prop; isHome → bg/gradiente transparente
+    MosaicBackground.tsx     ← ⚠️ DEPRECATED — substituído por AsciiShader
     Monogram.tsx             ← widthClass prop
     NavSelector.tsx          ← variant pill|underline, textSize, pillHeight, gap
     PageFooter.tsx           ← variant floating|inline|static + FooterBackToTop export

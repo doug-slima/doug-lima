@@ -74,7 +74,7 @@ export default function ContactButton() {
               href="https://www.linkedin.com/in/dougslima/?locale=en"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-fit h-[56px] px-5 rounded-full flex items-center gap-3 font-fenix text-[18px] text-text-default border border-[#AFB4A7] hover:bg-[#E8E9D9] hover:border-transparent active:bg-[#C7FF04] active:border-transparent"
+              className="w-fit h-[56px] px-5 rounded-full flex items-center gap-3 font-fenix text-[18px] text-text-default bg-[#F9F9F2] border border-[#AFB4A7] hover:bg-[#E8E9D9] hover:border-transparent active:bg-[#C7FF04] active:border-transparent"
               style={pillShadow}
             >
               Linkedin
@@ -86,7 +86,7 @@ export default function ContactButton() {
               href="https://substack.com/@douglima"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-fit h-[56px] px-5 rounded-full flex items-center gap-3 font-fenix text-[18px] text-text-default border border-[#AFB4A7] hover:bg-[#E8E9D9] hover:border-transparent active:bg-[#C7FF04] active:border-transparent"
+              className="w-fit h-[56px] px-5 rounded-full flex items-center gap-3 font-fenix text-[18px] text-text-default bg-[#F9F9F2] border border-[#AFB4A7] hover:bg-[#E8E9D9] hover:border-transparent active:bg-[#C7FF04] active:border-transparent"
               style={pillShadow}
             >
               Substack
@@ -96,7 +96,7 @@ export default function ContactButton() {
 
             <button
               onClick={copyEmail}
-              className="w-fit h-[56px] px-5 rounded-full flex items-center gap-3 font-fenix text-[18px] text-text-default cursor-pointer border border-[#AFB4A7] hover:bg-[#E8E9D9] hover:border-transparent active:bg-[#C7FF04] active:border-transparent"
+              className="w-fit h-[56px] px-5 rounded-full flex items-center gap-3 font-fenix text-[18px] text-text-default cursor-pointer bg-[#F9F9F2] border border-[#AFB4A7] hover:bg-[#E8E9D9] hover:border-transparent active:bg-[#C7FF04] active:border-transparent"
               style={pillShadow}
             >
               {copied ? "copied!" : "hello@douglima.work"}

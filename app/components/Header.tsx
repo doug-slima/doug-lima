@@ -22,9 +22,10 @@ interface HeaderProps {
 
 function PageNav() {
   const pathname = usePathname();
+  const isHome = pathname === "/";
   return (
     <>
-      <Link href="/" className="group">
+      <Link href="/" className={`group${isHome ? " bg-[#F9F9F2]" : ""}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/assets/home/doug-lima-lettering.svg" alt="doug_lima." className="h-[clamp(28px,7.5vw,32px)] md:h-[40px] w-auto block group-hover:hidden" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -46,11 +47,14 @@ function PageNav() {
 }
 
 export default function Header({ block2 }: HeaderProps) {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
   return (
     <>
       {/* Mobile: fixed at top with background + gradient fade */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 pointer-events-none">
-        <div className="pointer-events-auto bg-bg-base px-8 pt-[44px]">
+        <div className={`pointer-events-auto px-8 pt-[44px] ${isHome ? "" : "bg-bg-base"}`}>
           <header className="flex items-start justify-between pb-3">
             <PageNav />
           </header>
@@ -60,7 +64,9 @@ export default function Header({ block2 }: HeaderProps) {
             </div>
           )}
         </div>
-        <div style={{ height: "24px", background: "linear-gradient(to bottom, #F9F9F2 0%, rgba(249,249,242,0) 100%)" }} />
+        {!isHome && (
+          <div style={{ height: "24px", background: "linear-gradient(to bottom, #F9F9F2 0%, rgba(249,249,242,0) 100%)" }} />
+        )}
       </div>
 
       {/* Desktop: in-flow, positioned by the page layout */}

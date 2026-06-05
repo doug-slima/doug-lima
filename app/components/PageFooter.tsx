@@ -25,7 +25,9 @@ const PageFooter = forwardRef<HTMLDivElement, PageFooterProps>(
     if (variant === "static") {
       return (
         <div ref={ref} className="mt-auto flex items-center justify-between">
-          <Monogram widthClass="w-[123px] md:w-[154px]" />
+          <div className="w-fit bg-[#F9F9F2]">
+            <Monogram widthClass="w-[123px] md:w-[154px]" />
+          </div>
           {right}
         </div>
       );
