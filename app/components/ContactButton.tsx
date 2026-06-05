@@ -12,6 +12,18 @@ export default function ContactButton() {
   const [copied, setCopied] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const firstPillRef = useRef<HTMLAnchorElement>(null);
+  const isKeyboardRef = useRef(false);
+
+  useEffect(() => {
+    const onKeyDown = () => { isKeyboardRef.current = true; };
+    const onPointerDown = () => { isKeyboardRef.current = false; };
+    window.addEventListener("keydown", onKeyDown, true);
+    window.addEventListener("pointerdown", onPointerDown, true);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown, true);
+      window.removeEventListener("pointerdown", onPointerDown, true);
+    };
+  }, []);
 
   const copyEmail = () => {
     navigator.clipboard.writeText("hello@douglima.work");
@@ -21,11 +33,11 @@ export default function ContactButton() {
 
   const close = () => {
     setIsOpen(false);
-    triggerRef.current?.focus();
+    if (isKeyboardRef.current) triggerRef.current?.focus();
   };
 
   useEffect(() => {
-    if (isOpen) firstPillRef.current?.focus();
+    if (isOpen && isKeyboardRef.current) firstPillRef.current?.focus();
   }, [isOpen]);
 
   return (

@@ -91,7 +91,7 @@
 
 ### Craft (`/craft`)
 
-**Desktop:** ver DESIGN-SYSTEM.md Seção 8. `px-[10.5rem]` · `paddingTop: 240px` · `BlurOverlay height=280 solidUntil="80%"` · Header com `block2`.
+**Desktop:** ver DESIGN-SYSTEM.md Seção 8. `px-[10.5rem]` · `paddingTop: 200px` · `BlurOverlay height=280 solidUntil="80%"` · Header com `block2`.
 
 **Mobile:**
 ```

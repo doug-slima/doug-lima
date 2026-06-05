@@ -88,7 +88,9 @@ export default function Craft() {
   useEffect(() => {
     const onScroll = () => {
       const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 10;
-      setFooterRevealed(atBottom);
+      const nearTop = window.scrollY < 50;
+      if (atBottom) setFooterRevealed(true);
+      if (nearTop) setFooterRevealed(false);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
