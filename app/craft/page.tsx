@@ -26,7 +26,7 @@ export default function Craft() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
-  const monogramRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   function scrollToTop() {
     scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -87,7 +87,7 @@ export default function Craft() {
   }, [showPasswordGate]);
 
   useEffect(() => {
-    const el = monogramRef.current;
+    const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => setFooterRevealed(entry.isIntersecting),
@@ -178,7 +178,7 @@ export default function Craft() {
               </>
             )}
 
-            <div className="mt-8" ref={monogramRef}>
+            <div className="mt-8">
               <Monogram widthClass="w-[123px]" />
             </div>
 
@@ -195,6 +195,12 @@ export default function Craft() {
           )}
 
         </div>{/* /card */}
+
+        {/* Sentinel — sibling of card, unaffected by card transform.
+            Positioned 104px above card bottom so IO fires before browser
+            chrome (nav bar) hides the last pixels of the document. */}
+        <div ref={sentinelRef} style={{ marginTop: "-104px", height: "1px" }} />
+
       </div>
 
       {/* ── Back to top — mobile only ───────────────────────────────── */}
