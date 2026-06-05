@@ -11,7 +11,6 @@ interface Options {
   resetKey?: string;
 }
 
-
 export function useFooterAnimation({
   scrollRef,
   lastItemRef,
@@ -19,14 +18,14 @@ export function useFooterAnimation({
   footerRef,
   resetKey = "",
 }: Options) {
-  const [atEnd, setAtEnd] = useState(false);
   const [isFooterMounted, setIsFooterMounted] = useState(false);
   const isFooterMountedRef = useRef(false);
-  // Exit anchor: scrollTop when enter finishes; exit is measured from this point
+  const footerHeightRef = useRef(0);
+  // Exit anchor: scrollTop when enter finishes
   const enterScrollTopRef = useRef(-1);
   // Enter anchor: scrollTop when atEnd is first detected
   const atEndScrollTopRef = useRef(-1);
-  // Prevents re-triggering enter scroll logic after footer reaches translateY(0)
+  // Prevents re-triggering enter after footer reaches translateY(0)
   const enterCompleteRef = useRef(false);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -36,38 +35,53 @@ export function useFooterAnimation({
     if (!container || !lastEl) return;
 
     container.scrollTo({ top: 0, behavior: "instant" });
-    setAtEnd(false);
+
     setIsFooterMounted(false);
     isFooterMountedRef.current = false;
+
     enterScrollTopRef.current = -1;
     atEndScrollTopRef.current = -1;
     enterCompleteRef.current = false;
-    if (contentDivRef.current) contentDivRef.current.style.paddingBottom = "0px";
+    if (contentDivRef.current) {
+      contentDivRef.current.style.paddingBottom = "0px";
+      contentDivRef.current.style.transform = "";
+      contentDivRef.current.style.transition = "";
+    }
 
     const onScroll = () => {
       const containerBottom = container.getBoundingClientRect().bottom;
       const lastBottom = lastEl.getBoundingClientRect().bottom;
       const newAtEnd = lastBottom <= containerBottom + 4;
 
-      // First time reaching end: record anchor and mount footer
+      // First time reaching end: record anchor and mount footer.
+      // queueMicrotask defers setIsFooterMounted(true) past the current sync batch,
+      // ensuring React sees false→true as two distinct commits so useLayoutEffect fires.
       if (newAtEnd && !isFooterMountedRef.current && atEndScrollTopRef.current < 0) {
         atEndScrollTopRef.current = container.scrollTop;
-        setIsFooterMounted(true);
+        queueMicrotask(() => {
+          if (!isFooterMountedRef.current && atEndScrollTopRef.current >= 0) {
+            setIsFooterMounted(true);
+          }
+        });
       }
 
       const footerEl = footerRef.current;
       const contentDiv = contentDivRef.current;
+      const footerHeight = footerHeightRef.current;
 
-      if (footerEl && contentDiv && isFooterMountedRef.current) {
-        const footerHeight = footerEl.offsetHeight;
+      if (footerEl && contentDiv && isFooterMountedRef.current && footerHeight > 0) {
 
-        // ── SCROLL-DRIVEN EXIT ─────────────────────────────────────────────────
+        // ── EXIT (1:1) ────────────────────────────────────────────────────────
         if (enterScrollTopRef.current >= 0) {
           const scrolledBack = Math.max(0, enterScrollTopRef.current - container.scrollTop);
-          const newY = Math.min(scrolledBack * 0.6, footerHeight);
-          footerEl.style.transform = `translateY(${newY}px)`;
+          const newY = Math.min(scrolledBack, footerHeight);
 
           if (newY > 0) {
+            // Cancel any active spring before taking scroll control
+            footerEl.style.transition = "";
+            contentDiv.style.transition = "";
+            contentDiv.style.transform = "";
+            footerEl.style.transform = `translateY(${newY}px)`;
             footerEl.style.zIndex = "auto";
             footerEl.style.pointerEvents = "none";
           } else {
@@ -85,8 +99,7 @@ export function useFooterAnimation({
           }
         }
 
-        // ── SCROLL-DRIVEN ENTER ────────────────────────────────────────────────
-        // Footer rises 1:1 with scroll — same feel as the exit, mirrored
+        // ── ENTER (1:1 + spring settle at completion) ─────────────────────────
         if (!enterCompleteRef.current && atEndScrollTopRef.current >= 0) {
           const scrolledPast = Math.max(0, container.scrollTop - atEndScrollTopRef.current);
           const newY = Math.max(0, footerHeight - scrolledPast);
@@ -94,15 +107,30 @@ export function useFooterAnimation({
 
           if (newY <= 0) {
             enterCompleteRef.current = true;
-            footerEl.style.transform = "translateY(0px)";
             footerEl.style.pointerEvents = "auto";
             footerEl.style.zIndex = "";
             enterScrollTopRef.current = container.scrollTop;
+
+            // Spring settle — footer and content pop up together then spring back in sync.
+            // Both move identically so the zero gap between them is preserved throughout.
+            footerEl.style.transition = "none";
+            footerEl.style.transform = "translateY(-10px)";
+            contentDiv.style.transition = "none";
+            contentDiv.style.transform = "translateY(-10px)";
+            footerEl.getBoundingClientRect(); // force reflow so browser sees the -10px state
+            const spring = "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)";
+            footerEl.style.transition = spring;
+            footerEl.style.transform = "translateY(0px)";
+            contentDiv.style.transition = spring;
+            contentDiv.style.transform = "translateY(0px)";
+            footerEl.addEventListener("transitionend", () => {
+              footerEl.style.transition = "";
+              contentDiv.style.transition = "";
+              contentDiv.style.transform = "";
+            }, { once: true });
           }
         }
       }
-
-      setAtEnd(newAtEnd);
     };
 
     container.addEventListener("scroll", onScroll, { passive: true });
@@ -110,20 +138,27 @@ export function useFooterAnimation({
     return () => container.removeEventListener("scroll", onScroll);
   }, [resetKey]);
 
-  // Keep ref in sync so scroll listener reads current mounted state
-  useEffect(() => { isFooterMountedRef.current = isFooterMounted; }, [isFooterMounted]);
-
-  // Before first paint: hide footer below viewport and add scroll space for enter + bounce
+  // useLayoutEffect runs synchronously before paint — two jobs:
+  // 1. Sync isFooterMountedRef immediately (zero frame delay vs. a separate useEffect)
+  // 2. On mount: push footer off-screen, reserve scroll space, set z-auto so footer
+  //    enters from behind the carousel (scroll container is later in DOM, wins at z-auto)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
+    isFooterMountedRef.current = isFooterMounted;
+
     const footerEl = footerRef.current;
     const contentDiv = contentDivRef.current;
     if (!isFooterMounted || !footerEl || !contentDiv) return;
-    const footerHeight = footerEl.offsetHeight;
+
+    const measured = footerEl.getBoundingClientRect().height || footerEl.offsetHeight;
+    const footerHeight = measured > 0 ? measured : 220;
+
+    footerHeightRef.current = footerHeight;
     footerEl.style.transform = `translateY(${footerHeight}px)`;
     footerEl.style.pointerEvents = "none";
+    footerEl.style.zIndex = "auto"; // behind carousel during enter
     contentDiv.style.paddingBottom = `${footerHeight}px`;
   }, [isFooterMounted]);
 
-  return { isFooterMounted, atEnd };
+  return { isFooterMounted };
 }

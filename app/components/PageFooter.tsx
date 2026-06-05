@@ -11,17 +11,35 @@ interface PageFooterProps {
   center?: React.ReactNode;
   /** Right slot — Back to top, Contact button, etc. */
   right: React.ReactNode;
-  /** "floating": absolute-positioned, animated (craft + track). "static": in-flow (home). Default: "floating". */
-  variant?: "floating" | "static";
+  /**
+   * "floating": absolute-positioned, animated (track).
+   * "inline":   in-flow inside the scroll container — no absolute, no z-index (craft desktop).
+   * "static":   in-flow, simplified layout (home).
+   * Default: "floating".
+   */
+  variant?: "floating" | "inline" | "static";
 }
 
 const PageFooter = forwardRef<HTMLDivElement, PageFooterProps>(
   function PageFooter({ scrollRef, center, right, variant = "floating" }, ref) {
     if (variant === "static") {
       return (
-        <div ref={ref} className="mt-auto flex items-end md:items-center justify-between">
-          <Monogram size="lg" className="h-[104px] md:w-[164px] md:h-auto" />
+        <div ref={ref} className="mt-auto flex items-center justify-between">
+          <Monogram widthClass="w-[123px] md:w-[154px]" />
           {right}
+        </div>
+      );
+    }
+
+    if (variant === "inline") {
+      return (
+        <div
+          ref={ref}
+          className="bg-bg-base grid grid-cols-3 items-center px-[72px] py-20"
+        >
+          <Monogram widthClass="w-[123px] md:w-[154px]" className="monogram-enter" />
+          <div className="flex justify-center">{center}</div>
+          <div className="flex justify-end">{right}</div>
         </div>
       );
     }
@@ -36,7 +54,7 @@ const PageFooter = forwardRef<HTMLDivElement, PageFooterProps>(
         }}
         className="absolute bottom-0 left-0 right-0 z-20 bg-bg-base grid grid-cols-3 items-center px-[72px] py-20"
       >
-        <Monogram size="4xl" className="monogram-enter" />
+        <Monogram widthClass="w-[123px] md:w-[154px]" className="monogram-enter" />
         <div className="flex justify-center">{center}</div>
         <div className="flex justify-end">{right}</div>
       </div>

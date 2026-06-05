@@ -15,15 +15,13 @@ export default function BackToTopButton({ paddingBottom, zIndex = 30 }: BackToTo
     >
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="h-[56px] px-5 rounded-full flex items-center gap-2 font-fenix text-[18px] text-text-default cursor-pointer"
+        className="h-[56px] pl-6 pr-5 rounded-full flex items-center gap-2 font-fenix text-[20px] text-text-default cursor-pointer border border-[#AFB4A7] hover:bg-[#E8E9D9] hover:border-transparent active:bg-[#C7FF04] active:border-transparent"
         style={{
-          backgroundColor: "#F6F3E6",
-          border: "1px solid #D0D1B3",
           boxShadow: "0px 4px 12px -8px rgba(0,0,0,0.25)",
           pointerEvents: "auto",
         }}
       >
-        Back to top <ArrowUp size={18} />
+        back to top <ArrowUp size={18} />
       </button>
     </div>
   );

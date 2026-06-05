@@ -20,18 +20,16 @@ export default function PrevNextBar({ onPrev, onNext }: PrevNextBarProps) {
         <button
           onClick={onPrev}
           aria-label="Previous project"
-          className="flex items-center gap-2 font-fenix text-[18px] cursor-pointer border-0 bg-transparent"
-          style={{ color: "#FAFAF5" }}
+          className="flex items-center gap-2 font-geist font-light text-[18px] cursor-pointer border-0 bg-transparent text-[#FAFAF5] hover:text-[#C7FF04]"
         >
-          <CaretLeft size={18} color="#FAFAF5" /> Prev
+          <CaretLeft size={18} /> Prev
         </button>
         <button
           onClick={onNext}
           aria-label="Next project"
-          className="flex items-center gap-2 font-fenix text-[18px] cursor-pointer border-0 bg-transparent"
-          style={{ color: "#FAFAF5" }}
+          className="flex items-center gap-2 font-geist font-light text-[18px] cursor-pointer border-0 bg-transparent text-[#FAFAF5] hover:text-[#C7FF04]"
         >
-          Next <CaretRight size={18} color="#FAFAF5" />
+          Next <CaretRight size={18} />
         </button>
       </div>
     </div>

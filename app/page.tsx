@@ -17,7 +17,7 @@ export default function Home() {
       footerContent={<ContactButton />}
     >
       <div className="md:mt-8">
-        <p className="font-geist font-light text-[28px] md:text-[40px] leading-tight text-text-default">
+        <p className="font-geist font-light text-[clamp(28px,7.5vw,32px)] md:text-[40px] leading-tight text-text-default">
           Curious
           <br />
           Designer

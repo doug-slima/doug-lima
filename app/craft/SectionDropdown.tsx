@@ -1,13 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CaretRight, CaretDown } from "@phosphor-icons/react";
 import { type Section } from "./data";
-
-interface SectionDropdownProps {
-  activeSection: Section;
-  onSectionChange: (section: Section) => void;
-}
 
 const labels: Record<Section, string> = {
   playground: "Playground",
@@ -17,77 +12,103 @@ const labels: Record<Section, string> = {
 const other = (s: Section): Section =>
   s === "playground" ? "selected-works" : "playground";
 
-export default function SectionDropdown({ activeSection, onSectionChange }: SectionDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+// Trigger height per breakpoint — open border-radius is always height / 2
+const TRIGGER_HEIGHT = { mobile: 48, desktop: 56 } as const;
+const OPEN_RADIUS = {
+  mobile: TRIGGER_HEIGHT.mobile / 2,
+  desktop: TRIGGER_HEIGHT.desktop / 2,
+} as const;
 
-  const close = () => {
-    setIsOpen(false);
-    triggerRef.current?.focus();
-  };
+interface Props {
+  activeSection: Section;
+  onSectionChange: (section: Section) => void;
+}
+
+export default function SectionDropdown({ activeSection, onSectionChange }: Props) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [hoveredOption, setHoveredOption] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    setIsDesktop(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
     function onOutsideClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        close();
+        setIsOpen(false);
       }
     }
     document.addEventListener("mousedown", onOutsideClick);
     return () => document.removeEventListener("mousedown", onOutsideClick);
   }, [isOpen]);
 
-  return (
-    <div ref={containerRef} className="relative">
-      <button
-        ref={triggerRef}
-        onClick={() => setIsOpen(true)}
-        aria-expanded={isOpen}
-        aria-haspopup="listbox"
-        className={`flex items-center gap-2 font-geist font-light text-[24px] leading-tight text-text-active bg-transparent border-0 p-0 cursor-pointer ${isOpen ? "invisible" : ""}`}
-      >
-        {labels[activeSection]}
-        <CaretRight size={20} color="#3B4028" />
-      </button>
+  const triggerColor = hoveredOption ? "#FAFAF5" : (isOpen || hovered) ? "#C7FF04" : "#FAFAF5";
+  const openRadius = isDesktop ? OPEN_RADIUS.desktop : OPEN_RADIUS.mobile;
 
-      {isOpen && (
-        <div
-          role="listbox"
-          className="absolute w-fit rounded-xl flex flex-col"
+  return (
+    <div
+      ref={containerRef}
+      className="self-start flex-shrink-0 relative h-[48px] md:h-[56px]"
+      style={{ zIndex: isOpen ? 50 : undefined }}
+    >
+      {/* width reference — in-flow, sets wrapper width to max label width */}
+      <div
+        aria-hidden
+        className="px-6 flex items-center gap-6 font-geist font-light text-[18px] whitespace-nowrap"
+        style={{ height: 0, overflow: "hidden", visibility: "hidden" }}
+      >
+        {labels["selected-works"]}
+        <CaretRight size={16} />
+      </div>
+
+      {/* pill — absolute so expansion doesn't displace the layout below */}
+      <div
+        className="absolute top-0 left-0 right-0 flex flex-col overflow-hidden"
+        style={{
+          backgroundColor: "#121210",
+          borderRadius: isOpen ? `${openRadius}px` : "9999px",
+          boxShadow: isOpen ? "0px 4px 12px -8px rgba(0,0,0,0.25)" : undefined,
+        }}
+      >
+        {/* trigger row — always visible */}
+        <button
+          onClick={() => setIsOpen((o) => !o)}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          className="h-[48px] md:h-[56px] px-6 w-full flex items-center justify-between gap-6 font-geist font-light text-[18px] cursor-pointer border-0 bg-transparent text-left whitespace-nowrap"
+          style={{ color: triggerColor }}
+        >
+          {labels[activeSection]}
+          {isOpen
+            ? <CaretDown size={16} color={triggerColor} />
+            : <CaretRight size={16} color={triggerColor} />}
+        </button>
+
+        {/* other option — height collapses when closed */}
+        <button
+          onClick={() => { onSectionChange(other(activeSection)); setIsOpen(false); }}
+          onMouseEnter={() => setHoveredOption(true)}
+          onMouseLeave={() => setHoveredOption(false)}
+          tabIndex={isOpen ? 0 : -1}
+          className="px-6 font-geist font-light text-[18px] cursor-pointer border-0 bg-transparent text-left whitespace-nowrap"
           style={{
-            top: -20,
-            left: -20,
-            zIndex: 30,
-            backgroundColor: "#F6F3E6",
-            border: "1px solid #AFB4A7",
-            boxShadow: "0 4px 12px -8px rgba(0,0,0,0.25)",
+            color: hoveredOption ? "#C7FF04" : "#FAFAF5",
+            height: isOpen ? "auto" : 0,
+            paddingBottom: isOpen ? "16px" : 0,
+            overflow: "hidden",
           }}
         >
-          <button
-            role="option"
-            aria-selected
-            onClick={close}
-            className="flex items-center gap-2 font-geist font-light text-[24px] leading-tight text-text-active bg-transparent border-0 cursor-pointer text-left"
-            style={{ padding: "20px 20px 8px 20px" }}
-          >
-            {labels[activeSection]}
-            <CaretDown size={20} color="#3B4028" />
-          </button>
-          <button
-            role="option"
-            aria-selected={false}
-            onClick={() => {
-              onSectionChange(other(activeSection));
-              close();
-            }}
-            className="font-geist font-light text-[24px] leading-tight bg-transparent border-0 cursor-pointer text-left"
-            style={{ padding: "4px 20px 20px 20px", color: "#A6AA74" }}
-          >
-            {labels[other(activeSection)]}
-          </button>
-        </div>
-      )}
+          {labels[other(activeSection)]}
+        </button>
+      </div>
     </div>
   );
 }

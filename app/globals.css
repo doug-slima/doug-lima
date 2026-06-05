@@ -50,6 +50,15 @@
   animation: monogram-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+:root {
+  --header-h: clamp(108px, calc(80px + 7.5vw), 112px);
+}
+@media (min-width: 768px) {
+  :root {
+    --header-h: 72px;
+  }
+}
+
 :focus-visible {
   outline: 2px solid #3B4028;
   outline-offset: 2px;
@@ -74,6 +83,16 @@
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+/* PageLayout content padding — mobile: fluid via --header-h, desktop: explicit 72px */
+.page-content-pt {
+  padding-top: var(--header-h);
+}
+@media (min-width: 768px) {
+  .page-content-pt {
+    padding-top: 72px;
   }
 }
 

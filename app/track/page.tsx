@@ -1,13 +1,14 @@
 "use client";
 
-import { useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 import Monogram from "../components/Monogram";
 import BlurOverlay from "../components/BlurOverlay";
+import BackToTopButton from "../components/BackToTopButton";
 import PageFooter, { FooterBackToTop } from "../components/PageFooter";
 import TimelineBlock, { TimelineEntry } from "../components/TimelineBlock";
 import TimelineItem from "../components/TimelineItem";
-import { useFooterAnimation } from "../hooks/useFooterAnimation";
+import { useScrollParallax } from "../hooks/useScrollParallax";
 
 const timeline: TimelineEntry[] = [
   {
@@ -94,21 +95,24 @@ const timeline: TimelineEntry[] = [
 ];
 
 export default function Track() {
+  const [footerRevealed, setFooterRevealed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const lastItemRef = useRef<HTMLDivElement>(null);
-  const contentDivRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
 
-  const { isFooterMounted } = useFooterAnimation({
-    scrollRef,
-    lastItemRef,
-    contentDivRef,
-    footerRef,
-  });
+  useEffect(() => {
+    const onScroll = () => {
+      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 10;
+      setFooterRevealed(atBottom);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   function scrollToTop() {
     scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  useScrollParallax({ elementRef: footerRef, scrollRef, factor: 0.4 });
 
   return (
     <>
@@ -118,24 +122,26 @@ export default function Track() {
 
         <Header />
 
-        <div className="px-10 pt-[144px] pb-10 flex flex-col">
+        <div className="px-8 pb-10 flex flex-col" style={{ paddingTop: "var(--header-h)" }}>
 
-          <p className="font-geist font-light text-[28px] leading-tight text-text-default">
+          <p className="font-geist font-light text-[clamp(28px,7.5vw,32px)] leading-tight text-text-default">
             20 years across<br />
             Design, Experiences<br />
             and Technology.
           </p>
 
-          <div className="mt-6 -mx-2 flex flex-col">
+          <div className="mt-6 flex flex-col">
             {timeline.map((entry, i) => (
               <TimelineItem key={i} entry={entry} />
             ))}
           </div>
 
-          <Monogram size="lg" className="mt-12" />
+          <Monogram widthClass="w-[123px]" className="mt-12" />
 
         </div>
       </div>
+
+      {footerRevealed && <BackToTopButton paddingBottom={73} />}
 
       {/* ── Desktop layout ──────────────────────────────────────────── */}
       <div className="hidden md:block bg-bg-base h-dvh overflow-hidden relative">
@@ -143,32 +149,28 @@ export default function Track() {
         {/* BlurOverlay — fades content scrolling under the header */}
         <BlurOverlay />
 
-        {/* Footer before scroll container in DOM — z-index trick lets content pass over on exit */}
-        {isFooterMounted && (
-          <PageFooter
-            ref={footerRef}
-            scrollRef={scrollRef}
-            right={<FooterBackToTop onClick={scrollToTop} />}
-          />
-        )}
-
         {/* content-module — full-screen scroll container */}
-        <div ref={scrollRef} className="absolute inset-0 overflow-y-auto">
-          <div ref={contentDivRef} className="px-[300px]" style={{ paddingTop: "160px" }}>
+        <div ref={scrollRef} className="absolute inset-0 overflow-y-auto" style={{ isolation: "isolate" }}>
+          {/* z-10 keeps timeline above the footer so it slides over it on exit */}
+          <div className="relative z-10 px-[300px]" style={{ paddingTop: "160px" }}>
             <p className="font-geist font-light text-[40px] leading-tight text-text-default mb-[80px]">
               20 years across Design,<br />Experiences and Technology.
             </p>
             <div className="flex flex-col">
-              {timeline.map((entry, i) => {
-                const isLast = i === timeline.length - 1;
-                return (
-                  <div key={i} ref={isLast ? lastItemRef : undefined} className="border-b border-[#DEDDCE] h-[280px] flex flex-col justify-center">
-                    <TimelineBlock {...entry} />
-                  </div>
-                );
-              })}
+              {timeline.map((entry, i) => (
+                <div key={i} className="border-b border-[#DEDDCE] h-[280px] flex flex-col justify-center">
+                  <TimelineBlock {...entry} />
+                </div>
+              ))}
             </div>
           </div>
+
+          {/* Footer — in-flow below timeline, z-auto so timeline slides over it on exit */}
+          <PageFooter
+            ref={footerRef}
+            variant="inline"
+            right={<FooterBackToTop onClick={scrollToTop} />}
+          />
         </div>
 
         {/* Floating header */}

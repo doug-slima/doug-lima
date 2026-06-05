@@ -55,7 +55,7 @@ export default function ContactButton() {
           />
 
           {/* Content panel — bottom-right anchored to trigger's position */}
-          <div className="absolute bottom-0 right-0 z-50 flex flex-col items-end gap-3">
+          <div className="absolute bottom-0 right-0 z-50 flex flex-col items-end gap-3 min-w-[160px]">
 
             <a
               ref={firstPillRef}
