@@ -18,7 +18,7 @@ interface PageLayoutProps {
   /**
    * When provided, renders a footer at the bottom of the content div:
    *   <footer mt-auto flex items-end justify-between>
-   *     <img dl-monogram.svg w-[88px] />
+   *     <Monogram widthClass="w-[123px] md:w-[154px]" />
    *     {footerContent}
    *   </footer>
    *

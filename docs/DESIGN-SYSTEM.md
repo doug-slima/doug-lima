@@ -509,6 +509,34 @@ alpha = alphaDefault + (alphaActive − alphaDefault) × mouseInfluence
 
 Canvas tem `background: transparent` e `alpha: true` no context — o `bg-bg-base` do `PageLayout` aparece por baixo. Não usar `BlurOverlay` junto (cobriria o shader).
 
+#### Backgrounds de legibilidade — home (`/`) only
+
+Como o canvas é transparente, os elementos de conteúdo que ficam sobre o shader precisam de `bg-[#F9F9F2]` para manter legibilidade quando os chars animados passam por baixo. Regra: `w-fit` garante que o fundo só cobre a área do elemento, não a linha inteira.
+
+| Elemento | Onde | Implementação |
+|---|---|---|
+| Logo (svg lettering) | `Header.tsx` → `PageNav` | `isHome` via `usePathname()` → `bg-[#F9F9F2]` no `<Link>` |
+| "Curious Designer" | `page.tsx` | `w-fit bg-[#F9F9F2]` no `<div className="md:mt-8">` |
+| Monograma | `PageFooter.tsx` → variant `"static"` | `<div className="w-fit bg-[#F9F9F2]">` wrapper em volta do `<Monogram>` |
+
+```tsx
+// Header.tsx — PageNav
+const isHome = pathname === "/"
+<Link href="/" className={`group${isHome ? " bg-[#F9F9F2]" : ""}`}>
+
+// page.tsx
+<div className="md:mt-8 w-fit bg-[#F9F9F2]">
+  <p>Curious<br/>Designer</p>
+</div>
+
+// PageFooter.tsx — static variant (home only)
+<div className="w-fit bg-[#F9F9F2]">
+  <Monogram widthClass="w-[123px] md:w-[154px]" />
+</div>
+```
+
+**Por que só `"static"` no PageFooter:** as variantes `"inline"` e `"floating"` (craft e track) têm `bg-bg-base` no container — o monograma já tem fundo. Só a home usa `"static"` sem bg de container.
+
 #### Para usar com novo SVG
 
 ```tsx
