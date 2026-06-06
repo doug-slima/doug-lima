@@ -20,7 +20,28 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Douglas Lima",
-  description: "Portfolio pessoal de Douglas Lima — product designer em transição para código.",
+  description: "Portfolio Doug Lima 2026",
+  openGraph: {
+    title: "Douglas Lima",
+    description: "Portfolio Doug Lima 2026",
+    url: "https://www.douglima.work",
+    siteName: "Douglas Lima",
+    images: [
+      {
+        url: "/assets/meta/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Douglas Lima — Portfolio 2026",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Douglas Lima",
+    description: "Portfolio Doug Lima 2026",
+    images: ["/assets/meta/og-image.png"],
+  },
 };
 
 export default function RootLayout({
