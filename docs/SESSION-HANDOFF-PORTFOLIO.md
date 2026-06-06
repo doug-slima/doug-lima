@@ -1,7 +1,7 @@
 # SESSION HANDOFF — douglima.work Portfolio
 
 > Documento de contexto para continuidade entre sessões.
-> Última atualização: 05 jun 2026 — Sessão 23 (AsciiShader home bg + header transparente + ajustes de surface + deploy Vercel)
+> Última atualização: 06 jun 2026 — Sessão 24 (limpeza deprecated, prefers-reduced-motion, meta tags, infra completa)
 > **Specs de componentes, tokens, hooks e arquitetura desktop → `docs/DESIGN-SYSTEM.md`**
 
 ---
@@ -20,12 +20,12 @@
 | Item | Status | Detalhes |
 |---|---|---|
 | Repo GitHub | ✅ | `doug-slima/doug-lima`, branch `main` |
-| Vercel | ✅ | Deploy manual via CLI (`vercel --prod`) — auto-deploy não configurado no Hobby plan |
+| Vercel | ✅ | Auto-deploy ativo — push na `main` → deploy automático em produção |
 | Cloudflare DNS | ✅ | `brenda.ns.cloudflare.com` + `zod.ns.cloudflare.com` |
 | Domínio na Vercel | ✅ | `douglima.work` + `www.douglima.work` |
-| Variável NDA | ⚠️ | `.env.local`: `NDA_PASSWORD=dvault` — **falta adicionar na Vercel** |
+| Variável NDA | ✅ | `NDA_PASSWORD=dvault` configurado na Vercel (Production + Preview) |
 | 2FA Vercel | ✅ | Configurado |
-| Email personalizado | ⏳ | Cloudflare Email Routing: `hello@douglima.work` → Gmail. Pendente. |
+| Email personalizado | ✅ | Cloudflare Email Routing: `hello@douglima.work` → `hi.tentacle@gmail.com` |
 
 ---
 
@@ -46,6 +46,7 @@
 | Grupo | Pasta | Conteúdo |
 |---|---|---|
 | Global | `home/` | Lettering (default + hover), monograma, mosaico, avatares, substack-logo, linkedin-logo |
+| Meta | `meta/` | `og-image.png` (1200×630) — og:image para redes sociais |
 | Timeline | `companies-page-track/` | 12 logos: espm, klauvi, mercado-livre, olist, aprender-design, hash, ied, kyvo, ifood, livework, unifei, itau |
 | Playground | `playground-works/` | Agroprop (12 imgs), LFC (14 imgs), Proxy (9 imgs), Purple (6 imgs) — cada pasta tem logo |
 | Selected Works | `selected-works/` | `project-picking-handheld/` (9 imgs + logo) · `project-checkin-desktop/` (11 imgs + logo) |
@@ -157,16 +158,23 @@ Taglines:        text-[clamp(28px,7.5vw,32px)]
 Imagens craft:   -mx-5 (12px nas laterais = gap entre imagens)
 ```
 
+### Sessão 24 — Limpeza, meta tags, infra ✅ Concluída
+
+| # | Tarefa | Status |
+|---|---|---|
+| 1 | Deletar `MosaicBackground.tsx` + keyframe `mosaic-scroll` + `.mosaic-container` CSS | ✅ |
+| 2 | Confirmar outros deprecated já deletados (ControlPill, ScrollColumn, etc.) | ✅ Já deletados |
+| 3 | `prefers-reduced-motion` no AsciiShader | ✅ Frame estático, sem RAF loop |
+| 4 | Meta tags: og:image, og:description, twitter card | ✅ `layout.tsx` |
+| 5 | Favicon: substituir Vercel default por `avatar-doug-hi` | ✅ `app/icon.png` |
+| 6 | `NDA_PASSWORD` na Vercel | ✅ Já estava configurado |
+| 7 | Auto-deploy Vercel | ✅ Já estava ativo |
+| 8 | Cloudflare Email Routing | ✅ `hello@douglima.work` → `hi.tentacle@gmail.com` |
+
 ### Depois desta sessão
 
 - [ ] Transições entre páginas — em discussão
-- [ ] `NDA_PASSWORD` na Vercel (painel → Environment Variables → `dvauth`) — **ainda pendente**
-- [ ] Meta tags (og:image, description, favicon)
-- [ ] Cloudflare Email Routing (`hello@douglima.work` → Gmail)
-- [ ] Deletar `MosaicBackground.tsx` (deprecated — substituído por AsciiShader)
-- [ ] Remover keyframe `mosaic-scroll` de `globals.css` (deprecated)
 - [ ] Testar AsciiShader em iOS Safari + Chrome mobile (touch events, performance)
-- [ ] Configurar auto-deploy na Vercel (Git integration → vercel.link/git)
 
 ### Sanity-check antes do launch v1
 
@@ -181,7 +189,7 @@ grep -r "ControlPill\|ScrollColumn\|useSplitLayout\|useFooterAnimation\|ProjectC
 
 **Verificações:**
 - [ ] `npm run build` sem erros
-- [ ] `NDA_PASSWORD` na Vercel
+- [ ] `NDA_PASSWORD` na Vercel ✅
 - [ ] Testar iOS Safari (dvh, safe-area-inset)
 - [ ] Testar Chrome mobile (375px + 430px)
 - [ ] Reduce Motion — animações desativadas
@@ -197,14 +205,17 @@ grep -r "ControlPill\|ScrollColumn\|useSplitLayout\|useFooterAnimation\|ProjectC
 
 ### Arquivos deprecated (deletar no sanity-check)
 
-| Arquivo | Substituto |
+Todos os deprecated foram deletados na Sessão 24. Codebase limpo.
+
+| Arquivo | Status |
 |---|---|
-| `components/ControlPill.tsx` | `FooterBackToTop` (exportado de `PageFooter`) |
-| `components/ScrollColumn.tsx` | div `absolute inset-0 overflow-y-auto` direto |
-| `hooks/useSplitLayout.ts` | padrão content-module + `useScrollParallax` |
-| `hooks/useFooterAnimation.ts` | `useScrollParallax` + `PageFooter variant="inline"` |
-| `craft/ProjectCarousel.tsx` | conteúdo inline em `craft/page.tsx` |
-| `craft/ProjectSelector.tsx` | `NavSelector` via `block2` no Header |
+| `components/MosaicBackground.tsx` | ✅ Deletado (Sessão 24) |
+| `components/ControlPill.tsx` | ✅ Deletado |
+| `components/ScrollColumn.tsx` | ✅ Deletado |
+| `hooks/useSplitLayout.ts` | ✅ Deletado |
+| `hooks/useFooterAnimation.ts` | ✅ Deletado |
+| `craft/ProjectCarousel.tsx` | ✅ Deletado |
+| `craft/ProjectSelector.tsx` | ✅ Deletado |
 
 ### Decisões de produto (não óbvias no código)
 
@@ -359,6 +370,29 @@ Ver DESIGN-SYSTEM.md Seção 3 para specs completas com props e exemplos.
 - **Bloco 2 mobile da craft scrolla com o conteúdo** — não fixo no header. Decisão de produto.
 - **Border radius proporcional:** `openRadius = triggerHeight / 2` — regra universal do SectionDropdown.
 - **`pt` do content = header sólido + gradiente.** Zero gap entre gradiente e início do conteúdo.
+
+---
+
+### Sessão 24 — Limpeza deprecated, prefers-reduced-motion, meta tags, infra
+
+#### Entregas
+
+1. **Limpeza de deprecated** — `MosaicBackground.tsx` deletado, keyframe `mosaic-scroll` + variável `--animate-mosaic-scroll` + classe `.mosaic-container` removidos de `globals.css`. Outros deprecated (ControlPill, ScrollColumn, etc.) já tinham sido deletados em sessões anteriores.
+
+2. **`prefers-reduced-motion` no AsciiShader** — quando o usuário ativa "Reduzir movimento" no SO, o shader renderiza um frame estático (shape visível, sem onda, sem cascata de intro, sem fly-off physics) e para o RAF loop. Implementado com `window.matchMedia("(prefers-reduced-motion: reduce)")` no useEffect de animação.
+
+3. **Meta tags** — `layout.tsx` atualizado com `openGraph` (title, description, url, og:image 1200×630) e `twitter` card. Favicon substituído: `app/favicon.ico` (default Vercel) → `app/icon.png` (avatar-doug-hi). Asset og:image em `public/assets/meta/og-image.png`.
+
+4. **Infra confirmada** — `NDA_PASSWORD=dvault` já estava na Vercel (Production + Preview). Auto-deploy já estava ativo — cada push na `main` dispara deploy automático (alias `*-git-main-*` confirma Git integration ativo).
+
+5. **Cloudflare Email Routing** — `hello@douglima.work` → `hi.tentacle@gmail.com`. MX (route1/2/3.mx.cloudflare.net) + DKIM + SPF adicionados via "Add missing records". Testado e funcionando.
+
+#### Definições desta sessão
+
+- **`prefers-reduced-motion` no AsciiShader**: sempre detectar via `matchMedia` no useEffect de animação (não no render). Capturar uma vez na setup do efeito — não precisa de listener de mudança.
+- **Favicon no App Router**: `app/icon.png` (qualquer formato de imagem) é servido automaticamente como favicon — não precisa de `favicon.ico`. Deletar o `.ico` e usar `.png` é mais simples.
+- **Auto-deploy Vercel**: estava ativo desde a Sessão 23. O alias `*-git-main-*` nas URLs de deploy é a assinatura do Git integration ativo — se aparecer na lista `vercel ls`, o auto-deploy funciona.
+- **Cloudflare Email Routing**: o botão "Connect" na Overview é para Email Workers (programático) — não é o fluxo de forwarding simples. O fluxo correto é: Destination Addresses → add Gmail → Routing Rules → add regra → Settings → "Add missing records".
 
 ---
 
