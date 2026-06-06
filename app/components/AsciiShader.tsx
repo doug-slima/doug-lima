@@ -228,13 +228,15 @@ export default function AsciiShader({
     const ctx = canvas.getContext("2d", { alpha: true })
     if (!ctx) return
 
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
     const HACK_BOOT = "01{}[]<>/\\|!@#$%&*:;=+-_~"
     const RAMP_KEYS: RampKey[] = ["minimal", "code", "blocks"]
 
     const animate = (timestamp: number) => {
       if (startTimeRef.current === null) startTimeRef.current = timestamp
-      const introElapsed  = (timestamp - startTimeRef.current) * 0.001
       const introDuration = 2.0
+      const introElapsed  = reduceMotion ? introDuration : (timestamp - startTimeRef.current) * 0.001
       const dt = Math.min((timestamp - (lastFrameRef.current || timestamp)) / 1000, 0.05)
       lastFrameRef.current = timestamp
 
@@ -242,10 +244,10 @@ export default function AsciiShader({
       const dpr        = window.devicePixelRatio || 1
       const { w: width, h: height } = dimsRef.current
       const cells      = gridRef.current as GridCell[] & { minCol: number; maxCol: number; minRow: number; maxRow: number }
-      const mouse      = mouseRef.current
+      const mouse      = reduceMotion ? { x: -9999, y: -9999 } : mouseRef.current
       const vel        = velRef.current
       const flying     = flyingRef.current
-      const time       = timestamp * 0.001 * cfg.speed
+      const time       = reduceMotion ? 0 : timestamp * 0.001 * cfg.speed
       const charSize   = cfg.cellSize
       const rampKey    = RAMP_KEYS[Math.round(cfg.charSet) % 3] ?? "minimal"
       const ramp       = CHAR_RAMPS[rampKey]
@@ -265,7 +267,7 @@ export default function AsciiShader({
 
       // ── Spawn flying chars on fast swipe ────────────────────────────────────
       const speedThresh = 3200
-      if (vel.speed > speedThresh && flying.length < MAX_FLYING) {
+      if (!reduceMotion && vel.speed > speedThresh && flying.length < MAX_FLYING) {
         const budget  = Math.min(Math.floor((vel.speed - speedThresh) / 800), 3, MAX_FLYING - flying.length)
         const dirX = vel.vx / vel.speed, dirY = vel.vy / vel.speed
         let spawned = 0
@@ -417,7 +419,7 @@ export default function AsciiShader({
       }
 
       ctx.restore()
-      rafRef.current = requestAnimationFrame(animate)
+      if (!reduceMotion) rafRef.current = requestAnimationFrame(animate)
     }
 
     rafRef.current = requestAnimationFrame(animate)

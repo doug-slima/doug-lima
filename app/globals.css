@@ -10,15 +10,6 @@
   --font-fenix: var(--font-fenix-var);
 }
 
-@theme {
-  --animate-mosaic-scroll: mosaic-scroll 120s linear infinite;
-}
-
-@keyframes mosaic-scroll {
-  from { transform: translateY(0); }
-  to { transform: translateY(-50%); }
-}
-
 @keyframes control-bar-enter {
   from { transform: translateY(80px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
@@ -93,17 +84,5 @@
 @media (min-width: 768px) {
   .page-content-pt {
     padding-top: 72px;
-  }
-}
-
-/* MosaicBackground positioning — mobile: left-anchored, desktop: right-anchored */
-.mosaic-container {
-  right: auto;
-  left: 0;
-}
-@media (min-width: 768px) {
-  .mosaic-container {
-    left: auto;
-    right: 0;
   }
 }
