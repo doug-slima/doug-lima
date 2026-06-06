@@ -1,7 +1,7 @@
 # SESSION HANDOFF — douglima.work Portfolio
 
 > Documento de contexto para continuidade entre sessões.
-> Última atualização: 05 jun 2026 — Sessão 22 (responsividade fluida implementada)
+> Última atualização: 05 jun 2026 — Sessão 23 (AsciiShader home bg + header transparente + ajustes de surface + deploy Vercel)
 > **Specs de componentes, tokens, hooks e arquitetura desktop → `docs/DESIGN-SYSTEM.md`**
 
 ---
@@ -20,7 +20,7 @@
 | Item | Status | Detalhes |
 |---|---|---|
 | Repo GitHub | ✅ | `doug-slima/doug-lima`, branch `main` |
-| Vercel | ✅ | Auto-deploy na `main` |
+| Vercel | ✅ | Deploy manual via CLI (`vercel --prod`) — auto-deploy não configurado no Hobby plan |
 | Cloudflare DNS | ✅ | `brenda.ns.cloudflare.com` + `zod.ns.cloudflare.com` |
 | Domínio na Vercel | ✅ | `douglima.work` + `www.douglima.work` |
 | Variável NDA | ⚠️ | `.env.local`: `NDA_PASSWORD=dvault` — **falta adicionar na Vercel** |
@@ -59,8 +59,11 @@
 - Server component (sem `"use client"`)
 - `PageLayout` com `footerContent={<ContactButton />}` → `PageFooter variant="static"` no rodapé
 - Tagline: Geist Light clamp(28px,7.5vw,32px) mobile / 40px desktop — in-flow abaixo do header
-- Mosaico: 120s linear, `w-[1272px]` alinhado à direita, todos os estilos críticos em inline `style`
+- **Background:** `AsciiShader` (substituiu `MosaicBackground`) — canvas transparente, shape do wordmark em ASCII animado
 - Content: var(--header-h) mobile (clamp 108-112px) · pt-[72px] desktop via .page-content-pt
+- **Header na home:** bg transparente + gradiente oculto (`isHome = pathname === "/"` em `PageNav` e `Header`)
+- **Backgrounds de legibilidade:** logo Link → `bg-[#F9F9F2]` (isHome); "Curious Designer" div → `w-fit bg-[#F9F9F2]`; Monogram (footer static) → `w-fit bg-[#F9F9F2]` wrapper
+- **Surface das pills:** NavSelector (Craft/Track) + ContactButton pills → `bg-[#F9F9F2]` no default (canvas transparente exporia o bg da página)
 
 ---
 
@@ -157,9 +160,13 @@ Imagens craft:   -mx-5 (12px nas laterais = gap entre imagens)
 ### Depois desta sessão
 
 - [ ] Transições entre páginas — em discussão
-- [ ] `NDA_PASSWORD` na Vercel (painel → Environment Variables → `dvault`)
+- [ ] `NDA_PASSWORD` na Vercel (painel → Environment Variables → `dvauth`) — **ainda pendente**
 - [ ] Meta tags (og:image, description, favicon)
 - [ ] Cloudflare Email Routing (`hello@douglima.work` → Gmail)
+- [ ] Deletar `MosaicBackground.tsx` (deprecated — substituído por AsciiShader)
+- [ ] Remover keyframe `mosaic-scroll` de `globals.css` (deprecated)
+- [ ] Testar AsciiShader em iOS Safari + Chrome mobile (touch events, performance)
+- [ ] Configurar auto-deploy na Vercel (Git integration → vercel.link/git)
 
 ### Sanity-check antes do launch v1
 
@@ -217,7 +224,8 @@ Valores fluid implementados com `clamp()`. Ver seção 6 — Sessão 22 para ref
 
 Ver DESIGN-SYSTEM.md Seção 3 para specs completas com props e exemplos.
 
-**Ativos:** Header · NavSelector · PageLayout · PageFooter · BlurOverlay · TimelineBlock · MosaicBackground · Monogram · BackToTopButton · ContactButton · SectionDropdown · PrevNextBar · TimelineItem · PasswordGate
+**Ativos:** Header · NavSelector · PageLayout · PageFooter · BlurOverlay · TimelineBlock · **AsciiShader** · Monogram · BackToTopButton · ContactButton · SectionDropdown · PrevNextBar · TimelineItem · PasswordGate
+**Deprecated (deletar):** MosaicBackground (substituído por AsciiShader)
 **Hooks ativos:** `useScrollParallax`
 **Deprecated:** ver tabela acima
 
@@ -351,6 +359,48 @@ Ver DESIGN-SYSTEM.md Seção 3 para specs completas com props e exemplos.
 - **Bloco 2 mobile da craft scrolla com o conteúdo** — não fixo no header. Decisão de produto.
 - **Border radius proporcional:** `openRadius = triggerHeight / 2` — regra universal do SectionDropdown.
 - **`pt` do content = header sólido + gradiente.** Zero gap entre gradiente e início do conteúdo.
+
+---
+
+### Sessão 23 — Footer reveal fix, AsciiShader home bg, header transparente, deploy Vercel
+
+#### Entregas
+
+1. **Footer reveal mobile (craft)** — bug da sessão anterior resolvido com 1 linha: `paddingBottom: "104px"` no outer wrapper mobile. Root cause: barra do Chrome (~60px) cria zona morta no fim do documento onde o IntersectionObserver não dispara. O padding extra empurra o sentinel para fora dessa zona.
+
+2. **AsciiShader** — componente novo `components/AsciiShader.tsx`. SVG path rasterizado para grelha ASCII com wave animation, mouse proximity highlight e fly-off physics. Canvas transparente (alpha:true). Scaling por breakpoint: desktop=fill width (`w/svgW`), mobile=fill height (`h/svgH`). Substitui `MosaicBackground` na home.
+
+3. **Header transparente na home** — `isHome = pathname === "/"` em `PageNav` e `Header`: bg do header mobile + gradiente de 24px ficam invisíveis apenas em `/`. Outras páginas sem alteração.
+
+4. **Backgrounds de legibilidade** — `bg-[#F9F9F2] w-fit` em logo (Link, isHome), "Curious Designer" (div page.tsx), monogram (wrapper no PageFooter static). Garantem leitura sobre o canvas animado.
+
+5. **Surface das pills #F9F9F2** — NavSelector pills (Craft/Track) e todas as ContactButton pills (LinkedIn, Substack, Email) recebem `bg-[#F9F9F2]` no estado default. Canvas transparente exporia o bg sem superfície nas pills.
+
+6. **Deploy Vercel** — primeiro deploy manual configurado: `npm i -g vercel` → `vercel login` → `vercel link` → `vercel --prod`. Site live em `www.douglima.work`.
+
+7. **dl-monogram.svg** atualizado (novo path geometry, viewBox 1064×1120).
+
+#### ❌ Erros — NÃO repetir
+
+1. **`replace_all` falha quando a string tem variações menores entre ocorrências.** O email button do ContactButton tinha `cursor-pointer` extra antes de `border` — o replace_all apanhou os dois `<a>` mas não o `<button>`. Sempre verificar o número de ocorrências antes e depois de um replace_all.
+
+2. **Função como prop de Server Component para Client Component → erro em runtime.** `colorFn={() => "199,255,4"}` passou numa prop de `page.tsx` (Server) para `AsciiShader` (Client) → `Functions cannot be passed directly to Client Components`. Solução: bake o default da `colorFn` dentro do componente Client. Nunca passar funções como props de Server → Client sem marcar com `"use server"`.
+
+3. **`docs/*.tsx` compilados pelo TypeScript como código de produção.** O `docs/ASCII Shader.tsx` tinha erros de tipo (funções não declaradas) que quebraram o build na Vercel. Solução: adicionar `"docs"` ao array `exclude` do `tsconfig.json`. Regra: qualquer `.ts/.tsx` na raiz do projecto é compilado — ficheiros de referência/design devem ficar em pastas excluídas.
+
+4. **Servidor antigo na porta 3000 após `rm -rf .next`.** Ao matar o cache e reiniciar, o processo anterior (PID 15684) permaneceu na porta 3000 servindo o build antigo. O novo servidor iniciou na 3001. Sempre verificar qual porta está a ser usada após restart: `lsof -ti:3000` ou matar o processo antigo explicitamente (`kill <PID>`).
+
+5. **colorFn × light theme: multiplicar luminância dá resultados errados.** A fórmula `r = round(tint * lum)` foi desenhada para dark theme (chars claros sobre fundo escuro). No light theme, o base color já é escuro (30–110), a luminância é baixa (~0.2), e multiplicar pelo tint (~220) resulta em chars muito escuros nas bordas do shape. Solução para light theme: usar o `colorFn` directamente como rgba com alpha baseado no brightness — `alpha = alphaBase + br × range`.
+
+6. **`waveIntensity: 0.34` → flicker idle invisível.** Wave contribui `0.34 × 0.3 = 0.10` de brightness. Com alpha floor em 0.55, a variação de alpha por wave era apenas 4% — imperceptível. Fix: `waveIntensity: 1.2` + alpha `0.20 + br × 0.75`. Regra: para flicker visível sem mouse, `waveIntensity × 0.3 × alphaRange > 0.15`.
+
+#### Definições desta sessão
+
+- **AsciiShader é transparente**: canvas usa `alpha: true` + `clearRect` — jamais definir `fillRect` com bg sólido. O bg da página aparece por baixo.
+- **Regra isHome no Header**: sempre detectar via `usePathname() === "/"` — nunca via prop drilling de `page.tsx` (seria necessário tornar a page Client Component).
+- **Variant "static" do PageFooter é home-only**: adicionar estilos directamente nesta branch sem conditional — não afecta craft/track.
+- **Deploy Vercel manual**: `vercel link` cria `.vercel/project.json`. Sem ele, o CLI não sabe a que projecto pertence. O arquivo deve ser commitado para que outros colaboradores não precisem fazer link.
+- **tsconfig exclude**: a pasta `docs/` deve estar sempre excluída da compilação TypeScript — contém ficheiros de referência/design que não são código de produção.
 
 ---
 
